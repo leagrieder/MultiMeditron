@@ -21,7 +21,7 @@ dependencies = [
     "click",
     "ray",
     "hydra-core",
-    "pydantic",
+    "rich",
     "pydanclick",
     "webdataset",
     "transformers",
