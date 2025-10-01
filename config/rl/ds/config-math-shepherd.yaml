@@ -33,8 +33,9 @@ processes:
       imports: ['re']
       func: |
         {
-          "prompt": data["prompt"],
-          "solution": data["completions"],
+          "prompt": [{"content": data["prompt"], "role": "user"}],
+          "reward_model": {"ground_truth": data["completions"]},
+          "data_source": "math-shepherd",
         }
   
   - type: shuffle

@@ -14,7 +14,7 @@ BASE_CONFIG_PATH=$(realpath $(dirname "$0")/../config)
 echo "Base config path: $BASE_CONFIG_PATH"
 DATASETS=(
     "math-shepherd mm preprocess-ds -c $BASE_CONFIG_PATH/rl/ds/config-math-shepherd.yaml"
-    "math-shepherd-val mm preprocess-ds -c $BASE_CONFIG_PATH/rl/ds/config-math-shepherd.yaml source.lwargs.split=test output=/capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/math-shepherd-val.parquet"
+    "math-shepherd-val mm preprocess-ds -c $BASE_CONFIG_PATH/rl/ds/config-math-shepherd.yaml source.kwargs.split=test output=/capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/math-shepherd-val.parquet"
     "baai-taco mm preprocess-ds -c $BASE_CONFIG_PATH/rl/ds/config-baai-taco.yaml"
     "nemotron mm preprocess-ds -c $BASE_CONFIG_PATH/rl/ds/config-nemotron-post-training.yaml"
 )
