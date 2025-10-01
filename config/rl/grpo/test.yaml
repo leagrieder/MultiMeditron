@@ -1,0 +1,14 @@
+hydra:
+  searchpath:
+    - pkg://multimeditron.config
+    - pkg://verl.trainer.config
+
+defaults:
+  - verl_trainer
+  - _self_
+
+data:
+  train_files:
+    - /capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/math-shepherd.parquet
+  val_files:
+    - /capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/math-shepherd-val.parquet
