@@ -18,7 +18,7 @@ tokenizer:
   use_fast: true
   attachment_token: <|reserved_special_token_0|>
 
-output: /capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/taco.parquet
+output: /capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/math-shepherd.parquet
 num_processes: 128
 
 processes:

@@ -21,7 +21,7 @@ tokenizer:
   attachment_token: <|reserved_special_token_0|>
 
 output: /capstor/store/cscs/swissai/a127/meditron/multimediset/reasoning/taco.parquet
-num_processes: 1
+num_processes: 128
 
 processes:
   - type: python
