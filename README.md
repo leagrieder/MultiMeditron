@@ -7,7 +7,7 @@ MultiMeditron is a multimodal LLM built by students and researchers from [LiGHT 
 To download the project. Execute the following commands:
 
 ```
-git clone https://github.com/OpenMeditron/MultiMeditron.git
+git clone https://github.com/EPFLiGHT/MultiMeditron.git
 cd MultiMeditron
 python3 -m venv .venv
 source .venv/bin/activate
@@ -53,12 +53,13 @@ sample = {
     "modalities" : modalities
 }
 
-modality_retriever = ModalityRetriever(registry=FileSystemImageRegistry(base_path=os.getcwd()))
+loader = FileSystemImageLoader(base_path=os.getcwd())
 
 collator = DataCollatorForMultimodal(
         tokenizer=tokenizer,
         tokenizer_type="llama",
-        modality_processors=model.processors(), 
+        modality_processors=model.processors(),
+        modality_loaders={"image" : loader},
         attachment_token_idx=attachment_token_idx,
         add_generation_prompt=True
 )
