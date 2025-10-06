@@ -10,7 +10,8 @@ RUN apt-get update && \
         tmux \
         sudo \
         git 
-        
+
+COPY . /workspace/MultiMeditron
 WORKDIR /workspace/MultiMeditron
 RUN pip install -e ".[flash-attn]"
 
