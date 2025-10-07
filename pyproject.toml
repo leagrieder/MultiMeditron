@@ -18,7 +18,7 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy<2.0.0",
     "click",
-    "ray",
+    "ray[serve]",
     "hydra-core",
     "rich",
     "pydanclick",
