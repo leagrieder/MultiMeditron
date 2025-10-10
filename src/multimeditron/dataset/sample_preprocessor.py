@@ -99,7 +99,7 @@ class SamplePreprocessor:
             processed_sample = sample.copy()
             processed_sample[MODALITIES_KEY] = []
 
-            for modality in sample[MODALITIES_KEY]:
+            for modality in sample.get(MODALITIES_KEY, []):
                 processed_sample[MODALITIES_KEY].append(
                     self.modality_processors[modality[MODALITY_TYPE_KEY]].process(modality)
                 )
