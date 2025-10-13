@@ -145,7 +145,7 @@ The instruction-tuning format follows a similar format.
 
 If you have your dataset in a JSONL format, you can convert it to the parquet/arrow format by running the following command:
 ```
-python merge_inputs -c path/to/config.yaml
+python merge_inputs.py -c path/to/config.yaml
 ```
 
 Where the `config.yaml` file is described later.
