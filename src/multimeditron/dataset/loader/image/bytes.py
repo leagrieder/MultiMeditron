@@ -43,6 +43,9 @@ class RawImageLoader(BaseModalityLoader):
             PIL.Image.Image: The loaded image as a PIL Image object.
         """
 
+        if isinstance(sample[MODALITY_VALUE_KEY], PIL.Image.Image):
+            return sample[MODALITY_VALUE_KEY]
+
         image_bytes = sample[MODALITY_VALUE_KEY]["bytes"]
         image = PIL.Image.open(io.BytesIO(image_bytes)).convert("RGB")
         return image
