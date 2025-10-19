@@ -14,12 +14,10 @@ class BaseModalityConfig(PretrainedConfig):
     Attributes:
         hidden_size (int): The size of the hidden layers' representation.
         modality_type (Optional[str]): The type of modality (e.g., 'ClipImage', 'ClipAudio').
-        max_batch_size (int): The maximum batch size supported by the modality.
     """
     def __init__(self,
                  hidden_size: int = 1024,
                  modality_type: Optional[str] = None,
-                 max_batch_size: int = 32,
                  **kwargs):
         """
         Initializes the BaseModalityConfig.
@@ -27,11 +25,9 @@ class BaseModalityConfig(PretrainedConfig):
         Args:
             hidden_size (int): The size of the hidden layers' representation. Default is 1024.
             modality_type (Optional[str]): The type of modality (e.g., 'ClipImage', 'ClipAudio'). Default is None.
-            max_batch_size (int): The maximum batch size supported by the modality. Default is 32.
             **kwargs: Additional keyword arguments passed to the PretrainedConfig initializer.
         """
         self.modality_type = modality_type  # e.g., 'ClipImage', 'ClipAudio'
-        self.max_batch_size = max_batch_size
         self.hidden_size = hidden_size
 
         super().__init__(**kwargs)
@@ -204,4 +200,6 @@ class AutoModality:
             raise ValueError(f"Modality name '{config['model_type']}' is not registered. Available values are {list(c._registry.keys())}")
         config_class = c._registry[config["model_type"]].config_class
         assert config_class is not None, f"Modality class '{config['model_type']}' does not have a config_class defined."
-        return config_class.from_dict(config, **kwargs)
+        modality_config = config_class.from_dict(config, **kwargs)
+        
+        return modality_config
