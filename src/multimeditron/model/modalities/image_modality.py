@@ -15,7 +15,7 @@ class ImageConfig(BaseModalityConfig):
         hidden_size (int): Dimension of the hidden layer for the projection network.
         clip_name (str): Name of the CLIP model to use as the feature extractor.
         projection_type (str): Type of projection network (e.g., "mlp").
-        use_2d_adapation (bool): Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.
+        use_2d_position_ids (bool): Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.
 
     Example:
         >>> config = ImageConfig(hidden_size=512, clip_name="openai/clip-vit-base-patch32")
@@ -28,7 +28,7 @@ class ImageConfig(BaseModalityConfig):
         hidden_size: int = 4096,
         clip_name: str = "openai/clip-vit-large-patch14",
         projection_type: str = "mlp",
-        use_2d_adapation: bool = False,
+        use_2d_position_ids: bool = False,
         **kwargs
     ):
         """
@@ -38,7 +38,7 @@ class ImageConfig(BaseModalityConfig):
             hidden_size (int): Dimension of the hidden layer for the projection network.
             clip_name (str): Name of the CLIP model to use as the feature extractor.
             projection_type (str): Type of projection network (e.g., "mlp").
-            use_2d_adapation (bool): Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.
+            use_2d_position_ids (bool): Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.
             **kwargs: Additional keyword arguments.
         """
         super().__init__(
@@ -49,7 +49,7 @@ class ImageConfig(BaseModalityConfig):
 
         self.clip_name = clip_name
         self.projection_type = projection_type
-        self.use_2d_adapation = use_2d_adapation
+        self.use_2d_position_ids = use_2d_position_ids
 
 
 class ImageProcessor(BaseModalityProcessor):
@@ -96,7 +96,7 @@ class ImageProcessor(BaseModalityProcessor):
         processed_modality[MODALITY_VALUE_KEY] = self.image_processor(images=image, return_tensors="pt")["pixel_values"][0]
         processed_modality[NUM_EMBEDDINGS_KEY] = self._num_patches_per_entry
 
-        if self.config.use_2d_adapation:
+        if self.config.use_2d_position_ids:
             # Create a position ids tensor for 2D adaptation starting at 0 to image_size - 1 on both axis
             processed_modality[POSITION_IDS_KEY] = torch.stack(
                 torch.meshgrid(
