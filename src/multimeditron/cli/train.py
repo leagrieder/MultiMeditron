@@ -37,7 +37,6 @@ def build_datasets(config):
     packed_datasets = []
 
     # use env vars set by torchrun
-    world = int(os.environ.get("WORLD_SIZE", "1"))
     rank = int(os.environ.get("RANK", "0"))
 
     # give each process fair slice of CPUs (per node)
@@ -47,12 +46,9 @@ def build_datasets(config):
     gpus_per_node = int(os.environ.get("GPUS_PER_NODE", os.environ.get("NPROC_PER_NODE", "1")))
     num_proc = max(1, cpus_visible // gpus_per_node)
 
-    logger.info(f"rank={rank} world_size={world} cpus_visible={cpus_visible} gpus_per_node={gpus_per_node} -> num_proc={num_proc}")
-
     tqdm = (lambda *a, **k: _tqdm(*a, disable=(rank != 0), **k))
 
     for ds_config in tqdm(config["datasets"], desc="Concatenating datasets"):
-        print(ds_config["packed_path"])
         if is_dataset_folder(ds_config["packed_path"]):
             dataset = load_from_disk(ds_config['packed_path'])
         else:
@@ -61,8 +57,6 @@ def build_datasets(config):
 
     ds = concatenate_datasets(packed_datasets).shuffle(seed=config.get("seed", 0))
     return ds
-
-
 
 
 @main_cli.command(epilog=EPILOG)

@@ -1,16 +1,96 @@
+from __future__ import annotations
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional, List, Union, Tuple, Any, Dict
+from typing import Optional, List, Union, Tuple, Any, Dict, Callable
 from transformers import PreTrainedModel, PretrainedConfig, AutoModel, AutoConfig, AutoProcessor, AutoModelForCausalLM
 from transformers.modeling_outputs import CausalLMOutputWithPast
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from multimeditron.model.modalities import BaseModalityProcessor, AutoModality, BaseModalityConfig, BaseModality
 from multimeditron.utils import get_torch_dtype
 import logging
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class ChatTemplate:
+    """
+    A generic chat template class to serialize conversation messages
+    for different LLM families (LLaMA, Qwen, Apertus, etc.).
+    """
+    name: str = "custom"
+
+
+    # Explicit delimiters for each message type
+    delimiters: Dict[str, Dict[str, str]] = field(default_factory=dict)
+
+    # ================================================================
+    # Built-in templates
+    # ================================================================
+
+    @staticmethod
+    def from_name(name: str) -> ChatTemplate:
+        templates = {
+            "llama": ChatTemplate.llama,
+            "apertus": ChatTemplate.apertus,
+            "qwen3": ChatTemplate.qwen3,
+        }
+        if name not in templates:
+            raise ValueError(f"Unknown chat template name: {name}")
+        return templates[name]()
+
+    # -------------------------------
+    # LLaMA / Mistral / Vicuna style
+    # -------------------------------
+    @staticmethod
+    def llama() -> ChatTemplate:
+        delimiters = {
+            "system": {"start": "<|start_header_id|>system<|end_header_id|>", "end": "<|eot_id|>"},
+            "user": {"start": "<|start_header_id|>user<|end_header_id|>", "end": "<|eot_id|>"},
+            "assistant": {"start": "<|start_header_id|>assistant<|end_header_id|>", "end": "<|eot_id|>"},
+        }
+
+        return ChatTemplate(
+            name="llama",
+            delimiters=delimiters,
+        )
+
+    # -------------------------------
+    # Apertus style
+    # -------------------------------
+    @staticmethod
+    def apertus() -> ChatTemplate:
+        delimiters = {
+            "system": {"start": "<|system_start|>", "end": "<|system_end|>"},
+            "developer": {"start": "<|developer_start|>", "end": "<|developer_end|>"},
+            "user": {"start": "<|user_start|>", "end": "<|user_end|>"},
+            "assistant": {"start": "<|assistant_start|>", "end": "<|assistant_end|>"},
+        }
+
+        return ChatTemplate(
+            name="apertus",
+            delimiters=delimiters,
+        )
+
+    # -------------------------------
+    # Qwen 3 / ChatML style
+    # -------------------------------
+    @staticmethod
+    def qwen3() -> ChatTemplate:
+        delimiters = {
+            "system": {"start": "<|im_start|>system", "end": "<|im_end|>"},
+            "user": {"start": "<|im_start|>user", "end": "<|im_end|>"},
+            "assistant": {"start": "<|im_start|>assistant", "end": "<|im_end|>"},
+        }
+
+        return ChatTemplate(
+            name="qwen3",
+            delimiters=delimiters,
+        )
+
+
 
 @dataclass
 class MultimodalConfig(PretrainedConfig):
