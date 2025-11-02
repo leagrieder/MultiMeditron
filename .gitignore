@@ -219,3 +219,5 @@ __marimo__/
 
 # Hide template files
 **/gitignored-*
+src/multimeditron/translation/experiments/results/high_resource_translation_results.json
+src/multimeditron/translation/experiments/results/high_resource_translation_results.json
