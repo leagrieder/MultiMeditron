@@ -498,9 +498,8 @@ class MultiModalModelForCausalLM(PreTrainedModel):
 
         # Truncate if needed
         if self.config.truncation and self.config.max_sequence_length is not None:
-            logger.warning(f"Truncating input to {self.config.max_sequence_length} tokens.")
-        
             if inputs_embeds.shape[1] > self.config.max_sequence_length:
+                logger.warning(f"Truncating input to {self.config.max_sequence_length} tokens.")
                 inputs_embeds = inputs_embeds[:, :self.config.max_sequence_length, :]
                 if labels is not None:
                     labels = labels[:, :self.config.max_sequence_length]
