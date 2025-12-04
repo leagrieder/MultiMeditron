@@ -1,3 +1,4 @@
+from multimeditron.cli import EPILOG, main_cli
 from multimeditron.model.model import MultimodalConfig, MultiModalModelForCausalLM, bootstrap
 from multimeditron.model.data_loader import DataCollatorForMultimodal
 from multimeditron.train.trainer import MultimodalTrainer, TRAINING_MAPPING
@@ -8,18 +9,19 @@ from multimeditron.model.modalities import AutoModality
 from multimeditron.dataset.loader import AutoModalityLoader
 from multimeditron.model.model import MultiModalModelForCausalLM, MultimodalConfig, ChatTemplate
 from tqdm import tqdm as _tqdm
+from PIL import PngImagePlugin
+from datasets import config as datasets_config
+from pathlib import Path
+
 import deepspeed
 import torch
 import os
 import yaml
-from PIL import PngImagePlugin
-from datasets import config as datasets_config
-
 import wandb
 import multiprocessing
 import click
-from multimeditron.cli import EPILOG, main_cli
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,14 @@ def is_jsonl(path: str) -> bool:
     filename, extension = os.path.splitext(path)
     return extension == ".jsonl"
 
+def is_main_process() -> bool:
+    # safe main-process check for DDP/torchrun
+    if not torch.distributed.is_available():
+        return True
+    if not torch.distributed.is_initialized():
+        return True
+    return torch.distributed.get_rank() == 0
+
 def build_datasets(config):
     packed_datasets = []
 
@@ -40,9 +50,7 @@ def build_datasets(config):
     rank = int(os.environ.get("RANK", "0"))
 
     # give each process fair slice of CPUs (per node)
-    # if SLURM_CPUS_PER_TASK is set, prefer it; else fallback to cpu_count
     cpus_visible = int(os.environ.get("SLURM_CPUS_PER_TASK", multiprocessing.cpu_count()))
-    
     gpus_per_node = int(os.environ.get("GPUS_PER_NODE", os.environ.get("NPROC_PER_NODE", "1")))
     num_proc = max(1, cpus_visible // gpus_per_node)
 
@@ -57,6 +65,8 @@ def build_datasets(config):
 
     ds = concatenate_datasets(packed_datasets).shuffle(seed=config.get("seed", 0))
     return ds
+
+
 
 
 @main_cli.command(epilog=EPILOG)
@@ -78,8 +88,8 @@ def train(config: str,
     torch.backends.cudnn.benchmark = False
     
     training_args = TrainingArguments(**config_dict["training_args"])
-    
-    # Create the base model
+
+    # === Tokenizer === 
     tokenizer = AutoTokenizer.from_pretrained(config_dict["base_llm"], padding_side='right', use_fast=True)
     tokenizer.pad_token = tokenizer.eos_token
 
@@ -95,7 +105,6 @@ def train(config: str,
     # Create a model
     torch.set_default_dtype(torch.bfloat16)
     
-
     modalities_config = []
     for modality in config_dict.get("modalities", []):
         modalities_config.append(AutoModality.config_from_dict(modality))
@@ -111,19 +120,21 @@ def train(config: str,
         if config_dict.get("base_model", None) is None:
             model = bootstrap(config_dict, tokenizer, modalities_config)
         else:
-            model = MultiModalModelForCausalLM.from_pretrained(config_dict["base_model"], 
-                                                               truncation=config_dict.get("truncation", False),
-                                                               max_sequence_length=config_dict.get("max_sequence_length", None))
+            # load starting weights from base_model (hub id or local checkpoint dir).
+            model = MultiModalModelForCausalLM.from_pretrained(
+                config_dict["base_model"], 
+                truncation=config_dict.get("truncation", False),
+                max_sequence_length=config_dict.get("max_sequence_length", None)
+            )
 
     model.train()
-    
     processors = model.processors()
-    
-    # build_datasets uses distributed env (for sharding) initialized in training args
+
+    # === Dataset ===
     dataset = build_datasets(config_dict)
     
     trainer_callbacks = []
-    if os.environ.get('ENABLE_NSYS') == '1' and not os.environ.get('ENABLE_BENCHY') == '1':  # benchy already launches profiler
+    if os.environ.get('ENABLE_NSYS') == '1' and not os.environ.get('ENABLE_BENCHY') == '1':
         trainer_callbacks.append(NvtxAnnotationCallback())
 
     
@@ -143,19 +154,47 @@ def train(config: str,
             pytorch_profiler_config=config_dict.get("pytorch_profiler", None),
             callbacks=trainer_callbacks,
     )
+
+    # === Weights & Biases ===
+    wandb_run = None
+    run_name = training_args.run_name or config_dict["training_args"]["run_name"]
     
-    if torch.distributed.get_rank() == 0:
-        run = wandb.init(project="MultiMeditron", config = config_dict ,name = config_dict["training_args"]["run_name"])
-    
-        import json
+    # get resume flag and wandb run id from config
+    wandb_run_id = config_dict.get("wandb_run_id", None)  # string or None
+    resume_flag = bool(config_dict.get("resume_from_checkpoint", False))
+
+    if is_main_process():
+        wandb_kwargs = dict(
+            project="MultiMeditron",
+            config=config_dict,
+            name=run_name,
+        )
+        
+        if wandb_run_id and resume_flag:
+            wandb_kwargs.update(id=str(wandb_run_id), resume="allow")
+        elif wandb_run_id:
+            # allow attaching to a fixed id even without checkpoint resume if user wants
+            wandb_kwargs.update(id=str(wandb_run_id))
+
+        wandb_run = wandb.init(**wandb_kwargs)
+
+        # attach deepspeed config
         with open(config_dict["training_args"]["deepspeed"], "r") as ds_file:
             deepspeed_config = json.load(ds_file)
-        run.config.update({"deepspeed_config": deepspeed_config})
+        wandb_run.config.update({"deepspeed_config": deepspeed_config})
+
+    # === Train (resume or fresh) ===
+    if resume_flag:
+        # always resume from the user-provided base_model checkpoint path
+        resume_ckpt = config_dict.get("base_model", None)
+        logger.info(f"Training: resuming from checkpoint provided in config.base_model: {resume_ckpt}")
+        trainer.train(resume_from_checkpoint=resume_ckpt)
+    else:
+        logger.info("Training: starting fresh (no resume_from_checkpoint).")
+        trainer.train()
     
-    trainer.train()
+    if is_main_process() and wandb_run is not None:
+        wandb_run.finish()
     
-    if torch.distributed.get_rank() == 0:
-        run.finish()
-    
-    if torch.distributed.is_initialized():
+    if torch.distributed.is_available() and torch.distributed.is_initialized():
         torch.distributed.barrier()

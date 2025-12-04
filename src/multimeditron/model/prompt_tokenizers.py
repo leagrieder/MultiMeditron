@@ -90,6 +90,7 @@ class PromptTokenizer:
         tokenized = tokenized_conversations + tokenized_texts
 
         padded_tokenized = self.pad_tokenized(tokenized)
+
         return self.update_with_token_range(padded_tokenized, samples)
 
     def update_with_token_range(
@@ -173,7 +174,7 @@ class PromptTokenizer:
                 attention_mask=outputs["attention_mask"].flatten(),
                 modalities_for_message=mod,
             )
-
+            
             # Don't want to predict pad tokens
             labels = torch.where(attention_mask == 0, IGNORE_TOKEN_INDEX, input_ids)
 
