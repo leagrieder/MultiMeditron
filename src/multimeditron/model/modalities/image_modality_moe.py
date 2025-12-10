@@ -1,8 +1,9 @@
+import torch
 from multimeditron.model.constants import NUM_EMBEDDINGS_KEY, MODALITY_VALUE_KEY
 from multimeditron.model.modalities.base import AutoModality, BaseModality, BaseModalityConfig, BaseModalityProcessor
 from multimeditron.model.modalities.moe.gating import GatingNetwork
 from multimeditron.model.projectors.mlp import MLPProjector
-import torch
+from multimeditron.model.attention import CrossAttention
 from transformers import AutoModel, AutoImageProcessor, AutoConfig, AutoImageProcessor, AutoConfig
 from typing import Dict, Any, List
 
@@ -17,7 +18,9 @@ class MOEImageConfig(BaseModalityConfig):
         gating_path: str = "",
         top_k_experts: int = 1,
         projection_type: str = "mlp",
+        generalist_idx: int = -1,
         fusion_method: str = "weighted_average",
+        cross_attn_heads: int = 8, 
         **kwargs,
     ):
         """
@@ -44,7 +47,9 @@ class MOEImageConfig(BaseModalityConfig):
         self.gating_path = gating_path
         self.projection_type = projection_type
         self.image_processor = image_processor
+        self.generalist_idx = generalist_idx
         self.fusion_method = fusion_method
+        self.cross_attn_heads = cross_attn_heads
 
 
 class MOEImageProcessor(BaseModalityProcessor):
@@ -72,8 +77,8 @@ class MOEImageProcessor(BaseModalityProcessor):
         # Determine number of embeddings based on fusion method
         if self.fusion_method == "sequence_append":
             processed_modality[NUM_EMBEDDINGS_KEY] = self._num_patches_per_entry * self.top_k_experts
-        elif self.fusion_method == "weighted_average":
-            processed_modality[NUM_EMBEDDINGS_KEY] = self._num_patches_per_entry 
+        elif self.fusion_method in ("weighted_average", "cross_attn"):
+            processed_modality[NUM_EMBEDDINGS_KEY] = self._num_patches_per_entry
         else:
             raise ValueError(f"Unknown fusion_method: {self.fusion_method}")
 
@@ -100,6 +105,9 @@ class MOEImageModality(BaseModality):
         self.expert_names: List[str] = list(config.expert_clip_names)
         assert len(self.expert_names) > 0, "config.expert_clip_names must be non-empty"
 
+        # verify last expert is generalist
+        # print(self.expert_names[-1] + " is assumed to be the generalist expert.")
+        
         self.embedding_size = None
         for clip_name in config.expert_clip_names:
             expert_model = AutoModel.from_pretrained(clip_name, trust_remote_code=True)
@@ -110,7 +118,7 @@ class MOEImageModality(BaseModality):
             self.experts.append(expert_model.vision_model)
 
         self._num_patches_per_entry = (self.experts[0].config.image_size // self.experts[0].config.patch_size) ** 2
-
+        self.generalist_idx = config.generalist_idx
         self.fusion_method = config.fusion_method
         self.gating_network = GatingNetwork.from_pretrained(config.gating_path)
 
@@ -129,7 +137,16 @@ class MOEImageModality(BaseModality):
         # register permutation as a non-persistent buffer 
         self.register_buffer("_gating_to_expert_perm", torch.tensor(perm_list, dtype=torch.long), persistent=False)
         self.projector = MLPProjector(self.embedding_size, config.hidden_size)
-        
+
+        if self.fusion_method.replace("-", "_") == "cross_attn":
+            self.cross_attn = CrossAttention(
+                dim=self.embedding_size,
+                num_heads=config.cross_attn_heads,
+                qkv_bias=True,
+                attn_drop=0.1,
+                proj_drop=0.1,
+            )
+
         self.modality_frozen = not self.training
 
     def forward(self, inputs) -> torch.Tensor:
@@ -144,7 +161,7 @@ class MOEImageModality(BaseModality):
             expert_out = expert(inputs).last_hidden_state[:, 1:, :]
             expert_outputs.append(expert_out)
 
-        # stacked_expert_outputs shape: (num_experts, batch_size, num_patches, embedding_size)
+        # stacked_expert_outputs shape: (B, N_experts, P, H)
         stacked_expert_outputs = torch.stack(expert_outputs, dim=1)
 
         if self.fusion_method == "sequence_append":
@@ -158,6 +175,34 @@ class MOEImageModality(BaseModality):
             weights = weights.index_select(dim=-1, index=perm)  # -> (B, N_experts)
             weights = weights.unsqueeze(-1).unsqueeze(-1)  # Shape: (batch_size, num_experts, 1, 1)
             fused = (stacked_expert_outputs * weights).sum(dim=1)
+        elif self.fusion_method == "cross_attn":
+            # query=generalist → cross-attn over specialists
+            B, E, P, C = stacked_expert_outputs.shape
+            # generalist tokens as queries: [B, P, C]
+            q = stacked_expert_outputs[:, self.generalist_idx, :, :]
+
+            # specialist indices (all except generalist)
+            specialist_indices = [i for i in range(E) if i != self.generalist_idx] # just in case order changes
+
+            # align gating weights to expert order
+            perm = self._gating_to_expert_perm
+            w_all = weights.index_select(dim=-1, index=perm)  # [B, E]
+
+            # keep only specialists’ weights and softmax across them
+            w_spec = w_all[:, specialist_indices]             # [B, E_spec] (E_spec = 4)
+            w_spec = torch.softmax(w_spec, dim=-1)
+
+            # build weighted expert contexts: list of [B, P, C]
+            experts_ctx = []
+            for j, e_idx in enumerate(specialist_indices):
+                ctx = stacked_expert_outputs[:, e_idx, :, :]  # [B, P, C]
+                # scale each specialist’s tokens by its gating weight
+                wj = w_spec[:, j].view(B, 1, 1)               # [B, 1, 1]
+                ctx = ctx * wj
+                experts_ctx.append(ctx)
+               
+            # cross-attend: generalist queries over specialists
+            fused = self.cross_attn(q, experts_ctx)           # [B, P, C]
         else:
             raise ValueError(f"Unsupported fusion_method: {self.fusion_method}")
 
