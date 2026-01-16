@@ -1,0 +1,10 @@
+multimeditron.config package
+============================
+
+Module contents
+---------------
+
+.. automodule:: multimeditron.config
+   :members:
+   :show-inheritance:
+   :undoc-members:

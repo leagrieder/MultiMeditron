@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>multimeditron.dataset.loader.image package - MultiMeditron 1.0.0 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="multimeditron.model package" href="multimeditron.model.html" /><link rel="prev" title="multimeditron.dataset.loader package" href="multimeditron.dataset.loader.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=44020203" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="multimeditron.dataset.loader.image package"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>MultiMeditron</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guides/guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../guides/quickstart.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/add_modality.html">Adding new modality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/dataset_format.html">Dataset format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/training.html">Training a MultiMeditron model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/known_issues.html">Known issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/configuration.html">Configuration Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="multimeditron.html">multimeditron package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.cli.html">multimeditron.cli package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="multimeditron.dataset.html">multimeditron.dataset package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="multimeditron.dataset.loader.html">multimeditron.dataset.loader package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.model.html">multimeditron.model package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="multimeditron.model.modalities.html">multimeditron.model.modalities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.train.html">multimeditron.train package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.utils.html">multimeditron.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.verl.html">multimeditron.verl package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-multimeditron.dataset.loader.image.bytes">multimeditron.dataset.loader.image.bytes module</a><ul>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader"><code class="docutils literal notranslate"><span class="pre">RawImageLoader</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader.load"><code class="docutils literal notranslate">load()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader.name"><code class="docutils literal notranslate">name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.dataset.loader.image.fs">multimeditron.dataset.loader.image.fs module</a><ul>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader"><code class="docutils literal notranslate"><span class="pre">FileSystemImageLoader</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader.load"><code class="docutils literal notranslate">load()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader.name"><code class="docutils literal notranslate">name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.dataset.loader.image">Module contents</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">MultiMeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="modules.html"><span itemprop="name">multimeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.html"><span itemprop="name">multimeditron package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.dataset.html"><span itemprop="name">multimeditron.dataset package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="4" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.dataset.loader.html"><span itemprop="name">multimeditron.dataset.loader package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="5" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">multimeditron.dataset.loader.image package</strong>
+        <meta itemprop="position" content="6" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="multimeditron-dataset-loader-image-package">
+<h1>multimeditron.dataset.loader.image package<a class="headerlink" href="#multimeditron-dataset-loader-image-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-multimeditron.dataset.loader.image.bytes">
+<span id="multimeditron-dataset-loader-image-bytes-module"></span><h2>multimeditron.dataset.loader.image.bytes module<a class="headerlink" href="#module-multimeditron.dataset.loader.image.bytes" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.bytes.RawImageLoader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.dataset.loader.image.bytes.</span></span><span class="sig-name descname"><span class="pre">RawImageLoader</span></span><a class="headerlink" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="multimeditron.dataset.loader.html#multimeditron.dataset.loader.BaseModalityLoader" title="multimeditron.dataset.loader.BaseModalityLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityLoader</span></code></a></p>
+<p>Loader for raw image bytes.
+Expects the sample dictionary to have a “value” key containing a dictionary with a “bytes” key holding the raw image bytes.
+Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">loader</span> <span class="o">=</span> <span class="n">RawImageLoader</span><span class="p">()</span>
+</span><span data-line="2"><span class="n">sample</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;bytes&quot;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;...&#39;</span><span class="p">},</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">}</span>
+</span><span data-line="3"><span class="n">image</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+</span><span data-line="4"><span class="c1"># image is a PIL Image object</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.bytes.RawImageLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader.load" title="Link to this definition">¶</a></dt>
+<dd><p>Load an image from raw bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sample</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dictionary containing at least the “value” key with a dictionary that has a “bytes” key holding the raw image bytes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded image as a PIL Image object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.bytes.RawImageLoader.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'raw-image'</span></em><a class="headerlink" href="#multimeditron.dataset.loader.image.bytes.RawImageLoader.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.dataset.loader.image.fs">
+<span id="multimeditron-dataset-loader-image-fs-module"></span><h2>multimeditron.dataset.loader.image.fs module<a class="headerlink" href="#module-multimeditron.dataset.loader.image.fs" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.fs.FileSystemImageLoader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.dataset.loader.image.fs.</span></span><span class="sig-name descname"><span class="pre">FileSystemImageLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="multimeditron.dataset.loader.html#multimeditron.dataset.loader.BaseModalityLoader" title="multimeditron.dataset.loader.BaseModalityLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityLoader</span></code></a></p>
+<p>Loader for image files from the filesystem.
+Expects the sample dictionary to have a “value” key containing the relative path to the image file.
+The base_path parameter specifies the root directory where images are stored.
+Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">loader</span> <span class="o">=</span> <span class="n">FileSystemImageLoader</span><span class="p">(</span><span class="n">base_path</span><span class="o">=</span><span class="s2">&quot;/path/to/images&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="n">sample</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;image1.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">}</span>
+</span><span data-line="3"><span class="n">image</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+</span><span data-line="4"><span class="c1"># image is a PIL Image object</span>
+</span></pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.fs.FileSystemImageLoader.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Image</span></span></span><a class="headerlink" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader.load" title="Link to this definition">¶</a></dt>
+<dd><p>Load an image from the filesystem.
+:param sample: A dictionary containing at least the “value” key with the relative path to the image file.
+:type sample: Dict[str, Any]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The loaded image as a PIL Image object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>PIL.Image.Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.dataset.loader.image.fs.FileSystemImageLoader.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fs-image'</span></em><a class="headerlink" href="#multimeditron.dataset.loader.image.fs.FileSystemImageLoader.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.dataset.loader.image">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-multimeditron.dataset.loader.image" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="multimeditron.dataset.loader.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">multimeditron.dataset.loader package</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="multimeditron.model.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">multimeditron.model package</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, LiGHT laboratory</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

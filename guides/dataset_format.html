@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dataset format - MultiMeditron 1.0.0 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Training a MultiMeditron model" href="training.html" /><link rel="prev" title="Adding new modality" href="add_modality.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=44020203" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Dataset format"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>MultiMeditron</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="add_modality.html">Adding new modality</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Dataset format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training.html">Training a MultiMeditron model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="known_issues.html">Known issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html">Configuration Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ref/modules.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../ref/multimeditron.html">multimeditron package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.cli.html">multimeditron.cli package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.dataset.html">multimeditron.dataset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ref/multimeditron.dataset.loader.html">multimeditron.dataset.loader package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.model.html">multimeditron.model package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../ref/multimeditron.model.modalities.html">multimeditron.model.modalities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.train.html">multimeditron.train package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.utils.html">multimeditron.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ref/multimeditron.verl.html">multimeditron.verl package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#arrow-format-recommended">Arrow format (recommended)</a><ul>
+<li><a class="reference internal" href="#pretraining-dataset">Pretraining dataset</a></li>
+<li><a class="reference internal" href="#instruction-tuning-dataset">Instruction-tuning dataset</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jsonl-format">JSONL format</a><ul>
+<li><a class="reference internal" href="#pretraining-format">Pretraining format</a></li>
+<li><a class="reference internal" href="#instruction-tuning-format">Instruction-tuning format</a></li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">MultiMeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="guide.html"><span itemprop="name">User Guides</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Dataset format</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="dataset-format">
+<h1>Dataset format<a class="headerlink" href="#dataset-format" title="Link to this heading">¶</a></h1>
+<p>This section describes the dataset format supported by the MultiMeditron pipeline. The dataset format varies from one modality to another and you can add your own modality by following <a class="reference internal" href="add_modality.html#add-modality-label"><span class="std std-ref">this tutorial</span></a>.</p>
+<p>Our training pipeline supports two types of dataset: pretraining and instruction-tuning datasets. Here are the two formats that we support:</p>
+<ol class="arabic simple">
+<li><p>Arrow/Parquet format (recommended): where the modalities are directly stored in the dataset</p></li>
+<li><p>JSONL format (not recommended): where the images and modalities are stored on the file system. Those dataset must be processed with <code class="code docutils literal notranslate"><span class="pre">merge_inputs.py</span></code></p></li>
+</ol>
+<section id="arrow-format-recommended">
+<h2>Arrow format (recommended)<a class="headerlink" href="#arrow-format-recommended" title="Link to this heading">¶</a></h2>
+<section id="pretraining-dataset">
+<h3>Pretraining dataset<a class="headerlink" href="#pretraining-dataset" title="Link to this heading">¶</a></h3>
+<p>Each dataset must contain a column <code class="code docutils literal notranslate"><span class="pre">text</span></code> and a column <code class="code docutils literal notranslate"><span class="pre">modalities</span></code>. The <code class="code docutils literal notranslate"><span class="pre">text</span></code> column contains string of the following form:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="s2">&quot;Let&#39;s compare the first image: &lt;|reserved_special_token_0|&gt;, and the second 3D image: &lt;|reserved_special_token_0|&gt;&quot;</span>
+</span></pre></div>
+</div>
+<p>And the code:<cite>modalities</cite> column must be of the following form:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;modality_type&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span> <span class="p">:</span> <span class="n">some_modality</span><span class="p">}]</span>
+</span></pre></div>
+</div>
+<p>For instance, for image type, <code class="code docutils literal notranslate"><span class="pre">some_modality</span></code> must contains the bytes of the image</p>
+<p>Note that we use a special placeholder <code class="code docutils literal notranslate"><span class="pre">&lt;|reserved_special_token_0|&gt;</span></code> to indicate the position of the tokens from the modality</p>
+</section>
+<section id="instruction-tuning-dataset">
+<h3>Instruction-tuning dataset<a class="headerlink" href="#instruction-tuning-dataset" title="Link to this heading">¶</a></h3>
+<p>It’s the same as the pretraining dataset but instead of the <code class="code docutils literal notranslate"><span class="pre">text</span></code> column, we have a <code class="code docutils literal notranslate"><span class="pre">conversations</span></code> column:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[</span>
+</span><span data-line="2">    <span class="p">{</span><span class="s2">&quot;role&quot;</span> <span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span> <span class="p">:</span> <span class="s2">&quot;You are Meditron&quot;</span><span class="p">},</span>
+</span><span data-line="3">    <span class="p">{</span><span class="s2">&quot;role&quot;</span> <span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span> <span class="p">:</span> <span class="s2">&quot;Compare the CT scan &lt;|reserved_special_token_0|&gt; with the image &lt;|reserved_special_token_0|&gt;.&quot;</span><span class="p">},</span>
+</span><span data-line="4">    <span class="p">{</span><span class="s2">&quot;role&quot;</span> <span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span> <span class="p">:</span> <span class="s2">&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot;</span><span class="p">},</span>
+</span><span data-line="5">    <span class="p">{</span><span class="s2">&quot;role&quot;</span> <span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span> <span class="p">:</span> <span class="s2">&quot;How is it related to that signal: &lt;|reserved_special_token_0|&gt;?&quot;</span><span class="p">},</span>
+</span><span data-line="6">    <span class="p">{</span><span class="s2">&quot;role&quot;</span> <span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span> <span class="p">:</span> <span class="s2">&quot;Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.&quot;</span><span class="p">}</span>
+</span><span data-line="7"><span class="p">]</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+<section id="jsonl-format">
+<h2>JSONL format<a class="headerlink" href="#jsonl-format" title="Link to this heading">¶</a></h2>
+<p>We also support <code class="code docutils literal notranslate"><span class="pre">.jsonl</span></code> files where each line corresponds to a sample. We describe how each sample must be formatted:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Please note that JSONL format is not recommended! We provide scripts to convert JSONL-formatted dataset into Arrow dataset. If your dataset is  in a JSONL format, you need to convert it first to Arrow before training.</p>
+</div>
+<section id="pretraining-format">
+<h3>Pretraining format<a class="headerlink" href="#pretraining-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">{</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Let&#39;s compare the first image: &lt;|reserved_special_token_0|&gt;, and the second 3D image: &lt;|reserved_special_token_0|&gt;&quot;</span><span class="p">,</span>
+</span><span data-line="3"><span class="w">  </span><span class="nt">&quot;modalities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;image&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/png&quot;</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;image_3d&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/npy&quot;</span><span class="p">}]</span>
+</span><span data-line="4"><span class="p">}</span>
+</span></pre></div>
+</div>
+</section>
+<section id="instruction-tuning-format">
+<h3>Instruction-tuning format<a class="headerlink" href="#instruction-tuning-format" title="Link to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">{</span>
+</span><span data-line="2"><span class="w">  </span><span class="nt">&quot;conversations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span data-line="3"><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You are Meditron&quot;</span><span class="p">},</span>
+</span><span data-line="4"><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Compare the CT scan &lt;|reserved_special_token_0|&gt; with the image &lt;|reserved_special_token_0|&gt;.&quot;</span><span class="p">},</span>
+</span><span data-line="5"><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit.&quot;</span><span class="p">},</span>
+</span><span data-line="6"><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;How is it related to that signal: &lt;|reserved_special_token_0|&gt;?&quot;</span><span class="p">},</span>
+</span><span data-line="7"><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.&quot;</span><span class="p">}</span>
+</span><span data-line="8"><span class="w">  </span><span class="p">],</span>
+</span><span data-line="9"><span class="w">  </span><span class="nt">&quot;modalities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;image_3d&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/npy&quot;</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;image&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/png&quot;</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;signal&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;path/to/npy&quot;</span><span class="p">}]</span>
+</span><span data-line="10"><span class="p">}</span>
+</span></pre></div>
+</div>
+</section>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="add_modality.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Adding new modality</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="training.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Training a MultiMeditron model</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, LiGHT laboratory</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

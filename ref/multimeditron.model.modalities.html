@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>multimeditron.model.modalities package - MultiMeditron 1.0.0 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="multimeditron.train package" href="multimeditron.train.html" /><link rel="prev" title="multimeditron.model package" href="multimeditron.model.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=44020203" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="multimeditron.model.modalities package"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>MultiMeditron</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guides/guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../guides/quickstart.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/add_modality.html">Adding new modality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/dataset_format.html">Dataset format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/training.html">Training a MultiMeditron model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/known_issues.html">Known issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/configuration.html">Configuration Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="multimeditron.html">multimeditron package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.cli.html">multimeditron.cli package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.dataset.html">multimeditron.dataset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="multimeditron.dataset.loader.html">multimeditron.dataset.loader package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="multimeditron.model.html">multimeditron.model package</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">multimeditron.model.modalities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.train.html">multimeditron.train package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.utils.html">multimeditron.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.verl.html">multimeditron.verl package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-multimeditron.model.modalities.base">multimeditron.model.modalities.base module</a></li>
+<li><a class="reference internal" href="#module-multimeditron.model.modalities.image_modality">multimeditron.model.modalities.image_modality module</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig"><code class="docutils literal notranslate"><span class="pre">ImageConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig.hidden_size"><code class="docutils literal notranslate">hidden_size</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig.clip_name"><code class="docutils literal notranslate">clip_name</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig.projection_type"><code class="docutils literal notranslate">projection_type</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig.use_2d_position_ids"><code class="docutils literal notranslate">use_2d_position_ids</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality"><code class="docutils literal notranslate"><span class="pre">ImageModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor"><code class="docutils literal notranslate"><span class="pre">ImageProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor.image_processor"><code class="docutils literal notranslate">image_processor</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor._num_patches_per_entry"><code class="docutils literal notranslate">_num_patches_per_entry</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.model.modalities.image_modality_moe">multimeditron.model.modalities.image_modality_moe module</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><code class="docutils literal notranslate"><span class="pre">MOEImageConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality"><code class="docutils literal notranslate"><span class="pre">MOEImageModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.train"><code class="docutils literal notranslate">train()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor"><code class="docutils literal notranslate"><span class="pre">MOEImageProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.model.modalities">Module contents</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality"><code class="docutils literal notranslate"><span class="pre">AutoModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality._registry"><code class="docutils literal notranslate">_registry</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality.config_from_dict"><code class="docutils literal notranslate">config_from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality.from_pretrained"><code class="docutils literal notranslate">from_pretrained()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality.preprocessor_from_name"><code class="docutils literal notranslate">preprocessor_from_name()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.AutoModality.register"><code class="docutils literal notranslate">register()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality"><code class="docutils literal notranslate"><span class="pre">BaseModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.tokenizer"><code class="docutils literal notranslate">tokenizer</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality._dtype"><code class="docutils literal notranslate">_dtype</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.freeze_all"><code class="docutils literal notranslate">freeze_all()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.get_config"><code class="docutils literal notranslate">get_config()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.unfreeze_all"><code class="docutils literal notranslate">unfreeze_all()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig"><code class="docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig.hidden_size"><code class="docutils literal notranslate">hidden_size</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig.modality_type"><code class="docutils literal notranslate">modality_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor"><code class="docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor.config"><code class="docutils literal notranslate">config</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageConfig"><code class="docutils literal notranslate"><span class="pre">BioMedCLIPImageConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality"><code class="docutils literal notranslate"><span class="pre">BioMedCLIPImageModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageProcessor"><code class="docutils literal notranslate"><span class="pre">BioMedCLIPImageProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig"><code class="docutils literal notranslate"><span class="pre">ImageConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig.hidden_size"><code class="docutils literal notranslate">hidden_size</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig.clip_name"><code class="docutils literal notranslate">clip_name</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig.projection_type"><code class="docutils literal notranslate">projection_type</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig.use_2d_position_ids"><code class="docutils literal notranslate">use_2d_position_ids</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality"><code class="docutils literal notranslate"><span class="pre">ImageModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageProcessor"><code class="docutils literal notranslate"><span class="pre">ImageProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageProcessor.image_processor"><code class="docutils literal notranslate">image_processor</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageProcessor._num_patches_per_entry"><code class="docutils literal notranslate">_num_patches_per_entry</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.ImageProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfig"><code class="docutils literal notranslate"><span class="pre">MOEImageConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfigPEP"><code class="docutils literal notranslate"><span class="pre">MOEImageConfigPEP</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfigPEP.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality"><code class="docutils literal notranslate"><span class="pre">MOEImageModality</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.train"><code class="docutils literal notranslate">train()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModality.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP"><code class="docutils literal notranslate"><span class="pre">MOEImageModalityPEP</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.embedding_size"><code class="docutils literal notranslate">embedding_size</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.freeze_modality_embedder"><code class="docutils literal notranslate">freeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.preprocessor_class"><code class="docutils literal notranslate">preprocessor_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.train"><code class="docutils literal notranslate">train()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_modality_embedder"><code class="docutils literal notranslate">unfreeze_modality_embedder()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_projection"><code class="docutils literal notranslate">unfreeze_projection()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageProcessor"><code class="docutils literal notranslate"><span class="pre">MOEImageProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageProcessor.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageProcessorPEP"><code class="docutils literal notranslate"><span class="pre">MOEImageProcessorPEP</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.modalities.MOEImageProcessorPEP.process"><code class="docutils literal notranslate">process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">MultiMeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="modules.html"><span itemprop="name">multimeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.html"><span itemprop="name">multimeditron package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.model.html"><span itemprop="name">multimeditron.model package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="4" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">multimeditron.model.modalities package</strong>
+        <meta itemprop="position" content="5" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="multimeditron-model-modalities-package">
+<h1>multimeditron.model.modalities package<a class="headerlink" href="#multimeditron-model-modalities-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-multimeditron.model.modalities.base">
+<span id="multimeditron-model-modalities-base-module"></span><h2>multimeditron.model.modalities.base module<a class="headerlink" href="#module-multimeditron.model.modalities.base" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-multimeditron.model.modalities.image_modality">
+<span id="multimeditron-model-modalities-image-modality-module"></span><h2>multimeditron.model.modalities.image_modality module<a class="headerlink" href="#module-multimeditron.model.modalities.image_modality" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality.</span></span><span class="sig-name descname"><span class="pre">ImageConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openai/clip-vit-large-patch14'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_2d_position_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<p>Configuration class for the Image Modality. Extends the BaseModalityConfig.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig.hidden_size">
+<span class="sig-name descname"><span class="pre">hidden_size</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig.hidden_size" title="Link to this definition">¶</a></dt>
+<dd><p>Dimension of the hidden layer for the projection network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig.clip_name">
+<span class="sig-name descname"><span class="pre">clip_name</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig.clip_name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the CLIP model to use as the feature extractor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig.projection_type">
+<span class="sig-name descname"><span class="pre">projection_type</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig.projection_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of projection network (e.g., “mlp”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig.use_2d_position_ids">
+<span class="sig-name descname"><span class="pre">use_2d_position_ids</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig.use_2d_position_ids" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">ImageConfig</span><span class="p">(</span><span class="n">hidden_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">clip_name</span><span class="o">=</span><span class="s2">&quot;openai/clip-vit-base-patch32&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">clip_name</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">openai/clip-vit-base-patch32</span>
+</span></pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'meditron_clip'</span></em><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality.</span></span><span class="sig-name descname"><span class="pre">ImageModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig" title="multimeditron.model.modalities.image_modality.ImageConfig"><span class="pre">ImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig" title="multimeditron.model.modalities.image_modality.ImageConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor" title="multimeditron.model.modalities.image_modality.ImageProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessor</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageModality.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality.</span></span><span class="sig-name descname"><span class="pre">ImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>A processor for handling image data. It uses a pretrained CLIP model for processing image inputs into tensors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageProcessor.image_processor">
+<span class="sig-name descname"><span class="pre">image_processor</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageProcessor.image_processor" title="Link to this definition">¶</a></dt>
+<dd><p>An instance of a pretrained image processor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AutoImageProcessor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageProcessor._num_patches_per_entry">
+<span class="sig-name descname"><span class="pre">_num_patches_per_entry</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageProcessor._num_patches_per_entry" title="Link to this definition">¶</a></dt>
+<dd><p>The number of patches per image entry, based on image and patch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality.ImageProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality.ImageProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Processes the input image modality into a tensor suitable for model consumption.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The input image data, where “value” is the key for image data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The processed tensor representation of the image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.model.modalities.image_modality_moe">
+<span id="multimeditron-model-modalities-image-modality-moe-module"></span><h2>multimeditron.model.modalities.image_modality_moe module<a class="headerlink" href="#module-multimeditron.model.modalities.image_modality_moe" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality_moe.</span></span><span class="sig-name descname"><span class="pre">MOEImageConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bias_proj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_clip_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openai/clip-vit-large-patch14'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gating_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k_experts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generalist_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fusion_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weighted_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_attn_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'moe_meditron_clip'</span></em><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality_moe.</span></span><span class="sig-name descname"><span class="pre">MOEImageModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><span class="pre">MOEImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<p>Mixture of Experts (MoE) Image Modality using CLIP models as experts.
+Combines multiple pretrained CLIP models as experts and uses a gating network to select and weight their outputs.
+During training, all experts are used and their outputs are weighted by the gating network.
+During evaluation, only the top-k experts are used (not implemented yet).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor" title="multimeditron.model.modalities.image_modality_moe.MOEImageProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageProcessor</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.train" title="Link to this definition">¶</a></dt>
+<dd><p>Set the module in training mode.</p>
+<p>This has an effect only on certain modules. See the documentation of
+particular modules for details of their behaviors in training/evaluation
+mode, i.e., whether they are affected, e.g. <code class="xref py py-class docutils literal notranslate"><span class="pre">Dropout</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BatchNorm</span></code>,
+etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> (<em>bool</em>) – whether to set training mode (<code class="docutils literal notranslate"><span class="pre">True</span></code>) or evaluation
+mode (<code class="docutils literal notranslate"><span class="pre">False</span></code>). Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.image_modality_moe.</span></span><span class="sig-name descname"><span class="pre">MOEImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><span class="pre">MOEImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>Processor for Mixture of Experts (MoE) Image Modality.
+Uses a pretrained image processor to convert raw images into pixel values.
+Prepares processing for the fusion method between experts’ outputs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.image_modality_moe.MOEImageProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method for processing modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Input data to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original sample with the processed modality</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.model.modalities">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-multimeditron.model.modalities" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">AutoModality</span></span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class for managing modality registration and retrieval.</p>
+<p>The AutoModality class provides a centralized registry for modality subclasses. It handles the registration of modality classes,
+and allows users to retrieve pretrained models, processors, and configurations for specific modalities.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality._registry">
+<span class="sig-name descname"><span class="pre">_registry</span></span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality._registry" title="Link to this definition">¶</a></dt>
+<dd><p>Internal dictionary storing registered modality classes, indexed by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality.config_from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><span class="pre">BaseModalityConfig</span></a></span></span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality.config_from_dict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality.from_pretrained">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pretrained</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><span class="pre">BaseModality</span></a></span></span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality.from_pretrained" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality.preprocessor_from_name">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">preprocessor_from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><span class="pre">BaseModalityProcessor</span></a></span></span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality.preprocessor_from_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.AutoModality.register">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.AutoModality.register" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BaseModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><span class="pre">BaseModalityConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtype</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">torch.bfloat16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">PreTrainedModel</span></code></p>
+<p>Abstract base class for modality models.</p>
+<p>This base class defines the common interface and attributes for all modality models.
+Subclasses must implement the abstract methods <cite>embedding_size</cite>, <cite>freeze_modality_embedder</cite>, <cite>unfreeze_modality_embedder</cite> and <cite>unfreeze_projection</cite></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.config" title="Link to this definition">¶</a></dt>
+<dd><p>Configuration object for the modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.BaseModalityConfig">BaseModalityConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>Class reference for the configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.tokenizer">
+<span class="sig-name descname"><span class="pre">tokenizer</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.tokenizer" title="Link to this definition">¶</a></dt>
+<dd><p>Tokenizer associated with the model, if any.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality._dtype">
+<span class="sig-name descname"><span class="pre">_dtype</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality._dtype" title="Link to this definition">¶</a></dt>
+<dd><p>Data type for the model’s tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.freeze_all">
+<span class="sig-name descname"><span class="pre">freeze_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.freeze_all" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze all parameters in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.freeze_modality_embedder">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><span class="pre">BaseModalityConfig</span></a></span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.get_config" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve the configuration object associated with the modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The configuration object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ModalityConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">type</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.unfreeze_all">
+<span class="sig-name descname"><span class="pre">unfreeze_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.unfreeze_all" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze all parameters in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.unfreeze_modality_embedder">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModality.unfreeze_projection">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BaseModalityConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PretrainedConfig</span></code></p>
+<p>Configuration class for defining modality parameters.</p>
+<p>This configuration is used as the base for all modality-specific configurations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityConfig.hidden_size">
+<span class="sig-name descname"><span class="pre">hidden_size</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityConfig.hidden_size" title="Link to this definition">¶</a></dt>
+<dd><p>The size of the hidden layers’ representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityConfig.modality_type">
+<span class="sig-name descname"><span class="pre">modality_type</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityConfig.modality_type" title="Link to this definition">¶</a></dt>
+<dd><p>The type of modality (e.g., ‘ClipImage’, ‘ClipAudio’).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BaseModalityProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><span class="pre">BaseModalityConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessorMixin</span></code></p>
+<p>Abstract base class for modality processors.</p>
+<p>The BaseModalityProcessor defines a standard interface for processing inputs of a specific modality.
+Subclasses must implement the abstract <cite>process</cite> method.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityProcessor.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityProcessor.config" title="Link to this definition">¶</a></dt>
+<dd><p>Configuration object for the processor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.BaseModalityConfig">BaseModalityConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BaseModalityProcessor.process">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.modalities.BaseModalityProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method for processing modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Input data to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original sample with the processed modality</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BioMedCLIPImageConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trust_remote_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<p>Image modality config for OpenCLIP-based models (e.g. BiomedCLIP)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'meditron_biomedclip'</span></em><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BioMedCLIPImageModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageConfig" title="multimeditron.model.modalities.image_modality_biomed.BioMedCLIPImageConfig"><span class="pre">BioMedCLIPImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<p>Image modality backed by BiomedCLIP (OpenCLIP).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageConfig" title="multimeditron.model.modalities.image_modality_biomed.BioMedCLIPImageConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BioMedCLIPImageConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.forward" title="Link to this definition">¶</a></dt>
+<dd><p>inputs: list[Tensor] each (3, 224, 224)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageProcessor" title="multimeditron.model.modalities.image_modality_biomed.BioMedCLIPImageProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BioMedCLIPImageProcessor</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">BioMedCLIPImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.BioMedCLIPImageConfig" title="multimeditron.model.modalities.image_modality_biomed.BioMedCLIPImageConfig"><span class="pre">BioMedCLIPImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>Image processor using OpenCLIP preprocessing (BiomedCLIP-compatible)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.BioMedCLIPImageProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.modalities.BioMedCLIPImageProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method for processing modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Input data to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original sample with the processed modality</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">ImageConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openai/clip-vit-large-patch14'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_2d_position_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<p>Configuration class for the Image Modality. Extends the BaseModalityConfig.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig.hidden_size">
+<span class="sig-name descname"><span class="pre">hidden_size</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig.hidden_size" title="Link to this definition">¶</a></dt>
+<dd><p>Dimension of the hidden layer for the projection network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig.clip_name">
+<span class="sig-name descname"><span class="pre">clip_name</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig.clip_name" title="Link to this definition">¶</a></dt>
+<dd><p>Name of the CLIP model to use as the feature extractor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig.projection_type">
+<span class="sig-name descname"><span class="pre">projection_type</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig.projection_type" title="Link to this definition">¶</a></dt>
+<dd><p>Type of projection network (e.g., “mlp”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig.use_2d_position_ids">
+<span class="sig-name descname"><span class="pre">use_2d_position_ids</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig.use_2d_position_ids" title="Link to this definition">¶</a></dt>
+<dd><p>Whether to use the 2D positional embeddings adaptation for 1D llm without retraining.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">ImageConfig</span><span class="p">(</span><span class="n">hidden_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">clip_name</span><span class="o">=</span><span class="s2">&quot;openai/clip-vit-base-patch32&quot;</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">clip_name</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">openai/clip-vit-base-patch32</span>
+</span></pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'meditron_clip'</span></em><a class="headerlink" href="#multimeditron.model.modalities.ImageConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">ImageModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig" title="multimeditron.model.modalities.image_modality.ImageConfig"><span class="pre">ImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageConfig" title="multimeditron.model.modalities.image_modality.ImageConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">FloatTensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality.ImageProcessor" title="multimeditron.model.modalities.image_modality.ImageProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ImageProcessor</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageModality.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">ImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.ImageProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>A processor for handling image data. It uses a pretrained CLIP model for processing image inputs into tensors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageProcessor.image_processor">
+<span class="sig-name descname"><span class="pre">image_processor</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageProcessor.image_processor" title="Link to this definition">¶</a></dt>
+<dd><p>An instance of a pretrained image processor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AutoImageProcessor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageProcessor._num_patches_per_entry">
+<span class="sig-name descname"><span class="pre">_num_patches_per_entry</span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageProcessor._num_patches_per_entry" title="Link to this definition">¶</a></dt>
+<dd><p>The number of patches per image entry, based on image and patch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.ImageProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.modalities.ImageProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Processes the input image modality into a tensor suitable for model consumption.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The input image data, where “value” is the key for image data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The processed tensor representation of the image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bias_proj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_clip_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openai/clip-vit-large-patch14'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gating_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k_experts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generalist_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fusion_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weighted_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_attn_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'moe_meditron_clip'</span></em><a class="headerlink" href="#multimeditron.model.modalities.MOEImageConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageConfigPEP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageConfigPEP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bias_proj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expert_clip_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'openai/clip-vit-base-patch32'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gating_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k_experts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mlp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generalist_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fusion_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weighted_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_attn_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageConfigPEP" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityConfig</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageConfigPEP.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'moe_meditron_clip_pep'</span></em><a class="headerlink" href="#multimeditron.model.modalities.MOEImageConfigPEP.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageModality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><span class="pre">MOEImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<p>Mixture of Experts (MoE) Image Modality using CLIP models as experts.
+Combines multiple pretrained CLIP models as experts and uses a gating network to select and weight their outputs.
+During training, all experts are used and their outputs are weighted by the gating network.
+During evaluation, only the top-k experts are used (not implemented yet).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageProcessor" title="multimeditron.model.modalities.image_modality_moe.MOEImageProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageProcessor</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.train" title="Link to this definition">¶</a></dt>
+<dd><p>Set the module in training mode.</p>
+<p>This has an effect only on certain modules. See the documentation of
+particular modules for details of their behaviors in training/evaluation
+mode, i.e., whether they are affected, e.g. <code class="xref py py-class docutils literal notranslate"><span class="pre">Dropout</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BatchNorm</span></code>,
+etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> (<em>bool</em>) – whether to set training mode (<code class="docutils literal notranslate"><span class="pre">True</span></code>) or evaluation
+mode (<code class="docutils literal notranslate"><span class="pre">False</span></code>). Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModality.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModality.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageModalityPEP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfigPEP" title="multimeditron.model.modalities.image_modality_moe_pep.MOEImageConfigPEP"><span class="pre">MOEImageConfigPEP</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModality" title="multimeditron.model.modalities.base.BaseModality"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModality</span></code></a></p>
+<p>Mixture of Experts (MoE) Image Modality using CLIP models as experts.
+Combines multiple pretrained CLIP models as experts and uses a gating network to select and weight their outputs.
+Uses Per Expert Projection (PEP) where each expert has its own projection layer.
+During training, all experts are used and their outputs are weighted by the gating network.
+During evaluation, only the top-k experts are used (not implemented yet).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfigPEP" title="multimeditron.model.modalities.image_modality_moe_pep.MOEImageConfigPEP"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageConfigPEP</span></code></a></p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.embedding_size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">embedding_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.embedding_size" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.freeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">freeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.freeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Freeze the parameters of the modality</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>This function should an will keep the modality in “eval” mode even if you call <code class="code docutils literal notranslate"><span class="pre">torch.nn.Module.train()</span></code> on the model! To remove the eval mode on the modality you should call <code class="xref py py-meth docutils literal notranslate"><span class="pre">multimeditron.model.modalities.base.BaseModality.unfreeze_modality_embedder()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.preprocessor_class">
+<span class="sig-name descname"><span class="pre">preprocessor_class</span></span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.preprocessor_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.modalities.MOEImageProcessorPEP" title="multimeditron.model.modalities.image_modality_moe_pep.MOEImageProcessorPEP"><code class="xref py py-class docutils literal notranslate"><span class="pre">MOEImageProcessorPEP</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.train" title="Link to this definition">¶</a></dt>
+<dd><p>Set the module in training mode.</p>
+<p>This has an effect only on certain modules. See the documentation of
+particular modules for details of their behaviors in training/evaluation
+mode, i.e., whether they are affected, e.g. <code class="xref py py-class docutils literal notranslate"><span class="pre">Dropout</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BatchNorm</span></code>,
+etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> (<em>bool</em>) – whether to set training mode (<code class="docutils literal notranslate"><span class="pre">True</span></code>) or evaluation
+mode (<code class="docutils literal notranslate"><span class="pre">False</span></code>). Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_modality_embedder">
+<span class="sig-name descname"><span class="pre">unfreeze_modality_embedder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_modality_embedder" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the modality</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_projection">
+<span class="sig-name descname"><span class="pre">unfreeze_projection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageModalityPEP.unfreeze_projection" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreeze the parameters of the projection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageProcessor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageProcessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.image_modality_moe.MOEImageConfig" title="multimeditron.model.modalities.image_modality_moe.MOEImageConfig"><span class="pre">MOEImageConfig</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageProcessor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>Processor for Mixture of Experts (MoE) Image Modality.
+Uses a pretrained image processor to convert raw images into pixel values.
+Prepares processing for the fusion method between experts’ outputs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageProcessor.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageProcessor.process" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method for processing modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Input data to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original sample with the processed modality</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageProcessorPEP">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.modalities.</span></span><span class="sig-name descname"><span class="pre">MOEImageProcessorPEP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.modalities.MOEImageConfigPEP" title="multimeditron.model.modalities.image_modality_moe_pep.MOEImageConfigPEP"><span class="pre">MOEImageConfigPEP</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageProcessorPEP" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseModalityProcessor</span></code></a></p>
+<p>Processor for Mixture of Experts (MoE) Image Modality.
+Per Expert Projection (PEP) version.
+Uses a pretrained image processor to convert raw images into pixel values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.modalities.MOEImageProcessorPEP.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.modalities.MOEImageProcessorPEP.process" title="Link to this definition">¶</a></dt>
+<dd><p>Abstract method for processing modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modality</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Input data to be processed.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original sample with the processed modality</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="multimeditron.model.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">multimeditron.model package</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="multimeditron.train.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">multimeditron.train package</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, LiGHT laboratory</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

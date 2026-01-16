@@ -1,0 +1,29 @@
+multimeditron.dataset.preprocessor package
+==========================================
+
+Submodules
+----------
+
+multimeditron.dataset.preprocessor.python module
+------------------------------------------------
+
+.. automodule:: multimeditron.dataset.preprocessor.python
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+multimeditron.dataset.preprocessor.shuffle module
+-------------------------------------------------
+
+.. automodule:: multimeditron.dataset.preprocessor.shuffle
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: multimeditron.dataset.preprocessor
+   :members:
+   :show-inheritance:
+   :undoc-members:

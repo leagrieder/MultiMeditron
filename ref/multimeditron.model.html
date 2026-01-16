@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="violet" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>multimeditron.model package - MultiMeditron 1.0.0 documentation</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="multimeditron.model.modalities package" href="multimeditron.model.modalities.html" /><link rel="prev" title="multimeditron.dataset.loader.image package" href="multimeditron.dataset.loader.image.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1c6635e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=44020203" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="multimeditron.model package"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>MultiMeditron</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials"></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guides/guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../guides/quickstart.html">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/add_modality.html">Adding new modality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/dataset_format.html">Dataset format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/training.html">Training a MultiMeditron model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/known_issues.html">Known issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guides/configuration.html">Configuration Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="multimeditron.html">multimeditron package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.cli.html">multimeditron.cli package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.dataset.html">multimeditron.dataset package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="multimeditron.dataset.loader.html">multimeditron.dataset.loader package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">multimeditron.model package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="multimeditron.model.modalities.html">multimeditron.model.modalities package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.train.html">multimeditron.train package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.utils.html">multimeditron.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="multimeditron.verl.html">multimeditron.verl package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-multimeditron.model.constants">multimeditron.model.constants module</a></li>
+<li><a class="reference internal" href="#module-multimeditron.model.data_loader">multimeditron.model.data_loader module</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal"><code class="docutils literal notranslate"><span class="pre">DataCollatorForMultimodal</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.add_generation_prompt"><code class="docutils literal notranslate">add_generation_prompt</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.attachment_token"><code class="docutils literal notranslate">attachment_token</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.chat_template"><code class="docutils literal notranslate">chat_template</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.modality_loaders"><code class="docutils literal notranslate">modality_loaders</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.modality_processors"><code class="docutils literal notranslate">modality_processors</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.numpy_call"><code class="docutils literal notranslate">numpy_call()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.return_tensors"><code class="docutils literal notranslate">return_tensors</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.tf_call"><code class="docutils literal notranslate">tf_call()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.tokenizer"><code class="docutils literal notranslate">tokenizer</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.torch_call"><code class="docutils literal notranslate">torch_call()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.use_2d_position_ids"><code class="docutils literal notranslate">use_2d_position_ids</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.model.model">multimeditron.model.model module</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate"><code class="docutils literal notranslate"><span class="pre">ChatTemplate</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.apertus"><code class="docutils literal notranslate">apertus()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.delimiters"><code class="docutils literal notranslate">delimiters</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.from_name"><code class="docutils literal notranslate">from_name()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.llama"><code class="docutils literal notranslate">llama()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.name"><code class="docutils literal notranslate">name</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.qwen3"><code class="docutils literal notranslate">qwen3()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.ChatTemplate.special_tokens"><code class="docutils literal notranslate">special_tokens</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM"><code class="docutils literal notranslate"><span class="pre">MultiModalModelForCausalLM</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.base_model_prefix"><code class="docutils literal notranslate">base_model_prefix</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.config_class"><code class="docutils literal notranslate">config_class</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.embed_modalities_with_text"><code class="docutils literal notranslate">embed_modalities_with_text()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.forward"><code class="docutils literal notranslate">forward()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_alignment"><code class="docutils literal notranslate">freeze_for_alignment()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_end2end"><code class="docutils literal notranslate">freeze_for_end2end()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_lm"><code class="docutils literal notranslate">freeze_for_lm()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.generate"><code class="docutils literal notranslate">generate()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.get_input_embeddings"><code class="docutils literal notranslate">get_input_embeddings()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.get_model"><code class="docutils literal notranslate">get_model()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.processors"><code class="docutils literal notranslate">processors()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.set_input_embeddings"><code class="docutils literal notranslate">set_input_embeddings()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.supports_gradient_checkpointing"><code class="docutils literal notranslate">supports_gradient_checkpointing</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM.unfreeze"><code class="docutils literal notranslate">unfreeze()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultimodalConfig"><code class="docutils literal notranslate"><span class="pre">MultimodalConfig</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.model.MultimodalConfig.from_dict"><code class="docutils literal notranslate">from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultimodalConfig.model_type"><code class="docutils literal notranslate">model_type</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.model.MultimodalConfig.to_dict"><code class="docutils literal notranslate">to_dict()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.model.bootstrap"><code class="docutils literal notranslate"><span class="pre">bootstrap()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.model.prompt_tokenizers">multimeditron.model.prompt_tokenizers module</a><ul>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer"><code class="docutils literal notranslate"><span class="pre">PromptTokenizer</span></code></a><ul>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.compute_token_range"><code class="docutils literal notranslate">compute_token_range()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.convert_tokens_to_ids"><code class="docutils literal notranslate">convert_tokens_to_ids()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.expand_attachment_input_tokens"><code class="docutils literal notranslate">expand_attachment_input_tokens()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.get_num_embeddings"><code class="docutils literal notranslate">get_num_embeddings()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.pad_tokenized"><code class="docutils literal notranslate">pad_tokenized()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_conversation"><code class="docutils literal notranslate">tokenize_conversation()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_samples"><code class="docutils literal notranslate">tokenize_samples()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_text"><code class="docutils literal notranslate">tokenize_text()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.update_with_token_range"><code class="docutils literal notranslate">update_with_token_range()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.validate_tokenized_results"><code class="docutils literal notranslate">validate_tokenized_results()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.vocab_size"><code class="docutils literal notranslate">vocab_size</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.find_tag_pos"><code class="docutils literal notranslate"><span class="pre">find_tag_pos()</span></code></a></li>
+<li><a class="reference internal" href="#multimeditron.model.prompt_tokenizers.replace_between_tags_v2"><code class="docutils literal notranslate"><span class="pre">replace_between_tags_v2()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-multimeditron.model">Module contents</a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">MultiMeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="modules.html"><span itemprop="name">multimeditron</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="multimeditron.html"><span itemprop="name">multimeditron package</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">multimeditron.model package</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue" role="main">
+          <section id="multimeditron-model-package">
+<h1>multimeditron.model package<a class="headerlink" href="#multimeditron-model-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="multimeditron.model.modalities.html">multimeditron.model.modalities package</a></li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-multimeditron.model.constants">
+<span id="multimeditron-model-constants-module"></span><h2>multimeditron.model.constants module<a class="headerlink" href="#module-multimeditron.model.constants" title="Link to this heading">¶</a></h2>
+<p>Constants used throughout the multimeditron model.</p>
+</section>
+<section id="module-multimeditron.model.data_loader">
+<span id="multimeditron-model-data-loader-module"></span><h2>multimeditron.model.data_loader module<a class="headerlink" href="#module-multimeditron.model.data_loader" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.data_loader.</span></span><span class="sig-name descname"><span class="pre">DataCollatorForMultimodal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PreTrainedTokenizerBase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_processors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="multimeditron.model.modalities.html#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><span class="pre">BaseModalityProcessor</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modality_loaders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="multimeditron.dataset.loader.html#multimeditron.dataset.loader.BaseModalityLoader" title="multimeditron.dataset.loader.BaseModalityLoader"><span class="pre">BaseModalityLoader</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chat_template</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_generation_prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_2d_position_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_tensors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'pt'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DataCollatorMixin</span></code></p>
+<p>A data collator for multimodal datasets that prepares batches of data for input into models.</p>
+<p>This class is designed to handle datasets containing multiple modalities (e.g., text, images, etc.).
+It processes and collates the data into a format suitable for multimodal model training and inference.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.add_generation_prompt">
+<span class="sig-name descname"><span class="pre">add_generation_prompt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.add_generation_prompt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.attachment_token">
+<span class="sig-name descname"><span class="pre">attachment_token</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.attachment_token" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.chat_template">
+<span class="sig-name descname"><span class="pre">chat_template</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.chat_template" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.modality_loaders">
+<span class="sig-name descname"><span class="pre">modality_loaders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="multimeditron.dataset.loader.html#multimeditron.dataset.loader.BaseModalityLoader" title="multimeditron.dataset.loader.BaseModalityLoader"><span class="pre">BaseModalityLoader</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.modality_loaders" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.modality_processors">
+<span class="sig-name descname"><span class="pre">modality_processors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="multimeditron.model.modalities.html#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><span class="pre">BaseModalityProcessor</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.modality_processors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.numpy_call">
+<span class="sig-name descname"><span class="pre">numpy_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.numpy_call" title="Link to this definition">¶</a></dt>
+<dd><p>Placeholder for NumPy integration.</p>
+<p>This function raises a NotImplementedError indicating that NumPy support is not implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – A batch consisting of dictionaries where each dictionary represents a sample.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Always raised to indicate that NumPy support is not available.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Alternatives:</dt><dd><p>Users can consider implementing a NumPy-specific collator if required for their use case.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.return_tensors">
+<span class="sig-name descname"><span class="pre">return_tensors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pt'</span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.return_tensors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.tf_call">
+<span class="sig-name descname"><span class="pre">tf_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.tf_call" title="Link to this definition">¶</a></dt>
+<dd><p>Placeholder for TensorFlow integration.</p>
+<p>This function raises a NotImplementedError indicating that TensorFlow support is not implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – A batch consisting of dictionaries where each dictionary represents a sample.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – Always raised to indicate that TensorFlow support is not available.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Alternatives:</dt><dd><p>Users can consider implementing a TensorFlow-specific collator if required for their use case.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.tokenizer">
+<span class="sig-name descname"><span class="pre">tokenizer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PreTrainedTokenizerBase</span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.tokenizer" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.torch_call">
+<span class="sig-name descname"><span class="pre">torch_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.torch_call" title="Link to this definition">¶</a></dt>
+<dd><p>Collate a batch of multimodal data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>raw_features</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – <p>A batch consisting of dictionaries where each dictionary represents a sample. Each sample must have:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>conversations (List[Dict[str, str]]):</dt><dd><p>Conversation history with roles and content.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>modalities (List[Dict[str, Any]]):</dt><dd><p>Information about additional modalities in the sample. Each modality contains:
+- type (str): Type of the modality (e.g., ‘image’, ‘audio’).
+- value (Any): Data associated with the modality.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>or:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>text (str):</dt><dd><p>The text content of the sample.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>modalities (List[Dict[str, Any]]):</dt><dd><p>Information about additional modalities in the sample. Each modality contains:</p>
+<ul>
+<li><p>type (str): Type of the modality (e.g., ‘image’, ‘audio’).</p></li>
+<li><p>value (Any): Data associated with the modality.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary structured as follows:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>input_ids (torch.Tensor):</dt><dd><p>Batch tensor of tokenized input sequences.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>labels (torch.Tensor):</dt><dd><p>Batch tensor of tokenized labels.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>attention_mask (torch.Tensor):</dt><dd><p>Batch tensor indicating padded positions (0 for padding, 1 otherwise).</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>position_ids (torch.Tensor):</dt><dd><p>Batch tensor of position indices for each token in the sequence.</p>
+</dd>
+</dl>
+</li>
+<li><p>processed_multimodal_inputs (Dict[str, Any]):</p></li>
+</ul>
+<p>Contains processed modality data with keys:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>batch_idx (Dict[str, torch.Tensor]):</dt><dd><p>Maps modality types to tensors indicating which batch sample each token belongs to.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>token_range (Dict[str, torch.Tensor]):</dt><dd><p>Maps modality types to tensors specifying the token range for each modality.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>stacked (Dict[str, List[Any]]):</dt><dd><p>Stores lists of modality values grouped by their types.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+<p>The function performs the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Separates input features by modality.</p></li>
+<li><p>Loads and processes modality-related data.</p></li>
+<li><p>Converts lists of modality features into tensors using the modality processors.</p></li>
+<li><p>Tokenizes text data by expanding the modality placeholders to the right amount.</p></li>
+<li><p>Computes positional and attention masks for sequence data.</p></li>
+</ol>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.data_loader.DataCollatorForMultimodal.use_2d_position_ids">
+<span class="sig-name descname"><span class="pre">use_2d_position_ids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#multimeditron.model.data_loader.DataCollatorForMultimodal.use_2d_position_ids" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.model.model">
+<span id="multimeditron-model-model-module"></span><h2>multimeditron.model.model module<a class="headerlink" href="#module-multimeditron.model.model" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.model.</span></span><span class="sig-name descname"><span class="pre">ChatTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'custom'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiters:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">special_tokens:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.ChatTemplate" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A generic chat template class to serialize conversation messages
+for different LLM families (LLaMA, Qwen, Apertus, etc.).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.apertus">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">apertus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></span><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.apertus" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.delimiters">
+<span class="sig-name descname"><span class="pre">delimiters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.delimiters" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.from_name">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></span><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.from_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.llama">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">llama</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></span><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.llama" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'custom'</span></em><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.qwen3">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">qwen3</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></span><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.qwen3" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.ChatTemplate.special_tokens">
+<span class="sig-name descname"><span class="pre">special_tokens</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimeditron.model.model.ChatTemplate.special_tokens" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.model.</span></span><span class="sig-name descname"><span class="pre">MultiModalModelForCausalLM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.model.MultimodalConfig" title="multimeditron.model.model.MultimodalConfig"><span class="pre">MultimodalConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PreTrainedModel</span></code></p>
+<p>A multimodal model for causal language modeling that integrates various modalities with a language model.</p>
+<p>This model extends PreTrainedModel and is designed to process multiple modalities (such as images,
+audio, etc.) alongside text inputs. It embeds the multimodal inputs into the same embedding space
+as the text tokens and processes them through a shared transformer model.</p>
+<p>The model architecture consists of:</p>
+<ol class="arabic simple">
+<li><p>A base language model (like Llama-3)</p></li>
+<li><p>Multiple modality processors (one for each supported modality)</p></li>
+<li><p>Projection layers to map modality embeddings to the language model’s embedding space</p></li>
+</ol>
+<p>This enables end-to-end training and inference with multimodal inputs, allowing the model
+to understand and generate text that incorporates information from multiple sources.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.base_model_prefix">
+<span class="sig-name descname"><span class="pre">base_model_prefix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'model'</span></em><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.base_model_prefix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.config_class" title="Link to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#multimeditron.model.model.MultimodalConfig" title="multimeditron.model.model.MultimodalConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultimodalConfig</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.embed_modalities_with_text">
+<span class="sig-name descname"><span class="pre">embed_modalities_with_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processed_multimodal_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.embed_modalities_with_text" title="Link to this definition">¶</a></dt>
+<dd><p>Embeds multimodal inputs alongside text tokens in a unified embedding space.</p>
+<p>This method takes text token IDs and processed multimodal inputs, embeds them both,
+and combines them into a single embedding tensor that can be processed by the
+transformer model. It first embeds the text tokens using the model’s token embeddings,
+then processes each modality’s inputs through their respective modality processors,
+projects them to the language model’s hidden dimension, and places them at the
+appropriate positions in the embedding sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Token IDs for the text input, shape [batch_size, seq_len].</p></li>
+<li><p><strong>processed_multimodal_inputs</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Dictionary containing:
+- ‘stacked’: Dict mapping modality names to tensors of processed inputs
+- ‘batch_idx’: Dict mapping modality names to batch indices for placement
+- ‘token_range’: Dict mapping modality names to token indices for placement</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Combined embeddings of text and multimodal inputs,</dt><dd><p>shape [batch_size, seq_len, hidden_size].</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LongTensor</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs_embeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FloatTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_key_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">FloatTensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multimodal_inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processed_multimodal_inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CausalLMOutputWithPast</span></span></span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Performs a forward pass through the multimodal model.</p>
+<p>This is the main computation method that processes both text and multimodal inputs.
+It first embeds all inputs (if not already embedded), handles truncation if configured,
+and then passes the combined embeddings through the language model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.LongTensor</em><em>, </em><em>optional</em>) – Token IDs for text input.
+Shape [batch_size, sequence_length].</p></li>
+<li><p><strong>inputs_embeds</strong> (<em>torch.FloatTensor</em><em>, </em><em>optional</em>) – Pre-computed input embeddings.
+If provided, input_ids will not be used. Shape [batch_size, sequence_length, hidden_size].</p></li>
+<li><p><strong>attention_mask</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Mask to avoid attention on padding tokens.
+Shape [batch_size, sequence_length].</p></li>
+<li><p><strong>position_ids</strong> (<em>torch.LongTensor</em><em>, </em><em>optional</em>) – Indices of positions for positional embeddings.
+Shape [batch_size, sequence_length].</p></li>
+<li><p><strong>past_key_values</strong> (<em>List</em><em>[</em><em>torch.FloatTensor</em><em>]</em><em>, </em><em>optional</em>) – Cached key/values for faster inference.</p></li>
+<li><p><strong>labels</strong> (<em>torch.LongTensor</em><em>, </em><em>optional</em>) – Labels for computing language modeling loss.
+Shape [batch_size, sequence_length].</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the key/value states for future use.</p></li>
+<li><p><strong>multimodal_inputs</strong> (<em>Any</em><em>, </em><em>optional</em>) – Raw multimodal inputs that need processing.</p></li>
+<li><p><strong>processed_multimodal_inputs</strong> (<em>Dict</em><em>, </em><em>optional</em>) – Pre-processed multimodal inputs ready for embedding.</p></li>
+<li><p><strong>return_dict</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return a dictionary output. Defaults to True.</p></li>
+<li><p><strong>cache_position</strong> (<em>Any</em><em>, </em><em>optional</em>) – Position in the cache for retrieval.</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments passed to the base model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Model outputs, typically containing:</dt><dd><ul class="simple">
+<li><p>loss (if labels provided)</p></li>
+<li><p>logits (prediction scores for each token)</p></li>
+<li><p>past_key_values (if use_cache=True)</p></li>
+<li><p>hidden_states (if output_hidden_states=True)</p></li>
+<li><p>attentions (if output_attentions=True)</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple, CausalLMOutputWithPast]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_alignment">
+<span class="sig-name descname"><span class="pre">freeze_for_alignment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_alignment" title="Link to this definition">¶</a></dt>
+<dd><p>Freezes model parameters for alignment training.</p>
+<p>This method prepares the model for alignment training by:</p>
+<ol class="arabic simple">
+<li><p>Freezing only the modality parts of each modality processor (keeping projections trainable)</p></li>
+<li><p>Freezing the entire language model</p></li>
+</ol>
+<p>This configuration is useful when aligning modality representations with
+the language model’s embedding space while keeping the core LM frozen.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_end2end">
+<span class="sig-name descname"><span class="pre">freeze_for_end2end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_end2end" title="Link to this definition">¶</a></dt>
+<dd><p>Freezes partial parameters for end-to-end training.</p>
+<p>This method prepares the model for end-to-end training by:</p>
+<ol class="arabic simple">
+<li><p>Freezing only the modality parts of each modality processor (keeping projections trainable)</p></li>
+<li><p>Making the language model parameters trainable</p></li>
+</ol>
+<p>This configuration is useful for fine-tuning the language model and modality
+projections together, while keeping the core modality encoders fixed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_lm">
+<span class="sig-name descname"><span class="pre">freeze_for_lm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.freeze_for_lm" title="Link to this definition">¶</a></dt>
+<dd><p>Freezes modality parameters for language model fine-tuning.</p>
+<p>This method prepares the model for language model fine-tuning by:</p>
+<ol class="arabic simple">
+<li><p>Freezing all modality processors completely (including projections)</p></li>
+<li><p>Making the language model parameters trainable</p></li>
+</ol>
+<p>This configuration is useful when you want to fine-tune the language model
+on multimodal inputs while keeping the modality processors fixed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_new_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">512</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">CausalLMOutputWithPast</span></span></span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.generate" title="Link to this definition">¶</a></dt>
+<dd><p>Generates text from multimodal inputs using the model.</p>
+<p>This method implements custom token generation logic for multimodal inputs.
+It processes a batch containing text token IDs and multimodal inputs, then
+performs autoregressive generation of new tokens until either the maximum
+token count is reached or all sequences have generated an end-of-sequence token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Dictionary containing the following keys:
+- input_ids: Text token IDs (torch.Tensor)
+- processed_multimodal_inputs: Processed multimodal inputs
+- attention_mask: Attention mask for the input sequence
+- position_ids: Position IDs for the input sequence</p></li>
+<li><p><strong>max_new_tokens</strong> (<em>int</em>) – Maximum number of tokens to generate. Defaults to 512.</p></li>
+<li><p><strong>temperature</strong> (<em>float</em>) – Sampling temperature for controlling randomness in generation.
+Lower values make generation more deterministic. Defaults to 0.1.</p></li>
+<li><p><strong>do_sample</strong> (<em>bool</em>) – Whether to use sampling for generation instead of greedy decoding.
+Defaults to True.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments passed to the underlying generation process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated token IDs, shape [batch_size, sequence_length]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.get_input_embeddings">
+<span class="sig-name descname"><span class="pre">get_input_embeddings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Embedding</span></span></span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.get_input_embeddings" title="Link to this definition">¶</a></dt>
+<dd><p>Returns embeddings of the LLM model</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.get_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.processors">
+<span class="sig-name descname"><span class="pre">processors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="multimeditron.model.modalities.html#multimeditron.model.modalities.BaseModalityProcessor" title="multimeditron.model.modalities.base.BaseModalityProcessor"><span class="pre">BaseModalityProcessor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.processors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.set_input_embeddings">
+<span class="sig-name descname"><span class="pre">set_input_embeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Embedding</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.set_input_embeddings" title="Link to this definition">¶</a></dt>
+<dd><p>Set input embeddings of the LLM model to the given value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.supports_gradient_checkpointing">
+<span class="sig-name descname"><span class="pre">supports_gradient_checkpointing</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.supports_gradient_checkpointing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultiModalModelForCausalLM.unfreeze">
+<span class="sig-name descname"><span class="pre">unfreeze</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultiModalModelForCausalLM.unfreeze" title="Link to this definition">¶</a></dt>
+<dd><p>Unfreezes all model parameters for full training.</p>
+<p>This method makes all parameters of the model trainable by:</p>
+<ol class="arabic simple">
+<li><p>Unfreezing all modality processors (both core encoders and projections)</p></li>
+<li><p>Making the language model parameters trainable</p></li>
+</ol>
+<p>This configuration enables full end-to-end training of the entire model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultimodalConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.model.</span></span><span class="sig-name descname"><span class="pre">MultimodalConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="multimeditron.model.modalities.html#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.base.BaseModalityConfig"><span class="pre">BaseModalityConfig</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_token_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eos_token_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_side</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initializer_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">llm_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'meta-llama/Llama-3.1-8B-Instruct'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_sequence_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bfloat16'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultimodalConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PretrainedConfig</span></code></p>
+<p>Configuration class for a multimodal model that integrates various modalities with a language model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultimodalConfig.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultimodalConfig.from_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a MultimodalConfig instance from a dictionary.</p>
+<p>This classmethod extends the parent class’s from_dict method to handle the
+special processing required for modality configurations. It extracts the
+modalities from the configuration dictionary, creates the appropriate
+ModalityConfig objects, and then initializes the MultimodalConfig with these
+processed modalities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_dict</strong> (<em>dict</em>) – Dictionary containing configuration parameters.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments passed to parent class’s from_dict method.
+Should include ‘return_unused_kwargs’ which determines the return format.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Either just the config object
+or a tuple of (config, unused_kwargs) if return_unused_kwargs is True.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[<a class="reference internal" href="#multimeditron.model.model.MultimodalConfig" title="multimeditron.model.model.MultimodalConfig">MultimodalConfig</a>, Tuple[<a class="reference internal" href="#multimeditron.model.model.MultimodalConfig" title="multimeditron.model.model.MultimodalConfig">MultimodalConfig</a>, Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultimodalConfig.model_type">
+<span class="sig-name descname"><span class="pre">model_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'multimodal'</span></em><a class="headerlink" href="#multimeditron.model.model.MultimodalConfig.model_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.model.MultimodalConfig.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.MultimodalConfig.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the MultimodalConfig object to a dictionary representation.</p>
+<p>This method extends the parent class’s to_dict method by properly handling
+the modalities list, converting each ModalityConfig object to its dictionary
+representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing all configuration parameters, with modalities</dt><dd><p>properly serialized.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimeditron.model.model.bootstrap">
+<span class="sig-prename descclassname"><span class="pre">multimeditron.model.model.</span></span><span class="sig-name descname"><span class="pre">bootstrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.model.bootstrap" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Bootstrap the model and initialize the model as follows:</dt><dd><ul class="simple">
+<li><p>LLM is initialized with the pretrained weights</p></li>
+<li><p>The modalities embedders are initialized with pretrained weights</p></li>
+<li><p>The modalities projector are initialized randomly</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – The configuration dictionary for the multimodal model.</p></li>
+<li><p><strong>tokenizer</strong> (<em>PreTrainedTokenizerBase</em>) – The tokenizer instance to use for tokenization.</p></li>
+<li><p><strong>modalities_config</strong> (<em>List</em><em>[</em><a class="reference internal" href="multimeditron.model.modalities.html#multimeditron.model.modalities.BaseModalityConfig" title="multimeditron.model.modalities.BaseModalityConfig"><em>BaseModalityConfig</em></a><em>]</em>) – List of modality configurations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The initialized multimodal model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#multimeditron.model.model.MultiModalModelForCausalLM" title="multimeditron.model.model.MultiModalModelForCausalLM">MultiModalModelForCausalLM</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-multimeditron.model.prompt_tokenizers">
+<span id="multimeditron-model-prompt-tokenizers-module"></span><h2>multimeditron.model.prompt_tokenizers module<a class="headerlink" href="#module-multimeditron.model.prompt_tokenizers" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimeditron.model.prompt_tokenizers.</span></span><span class="sig-name descname"><span class="pre">PromptTokenizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PreTrainedTokenizerBase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chat_template</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimeditron.model.model.ChatTemplate" title="multimeditron.model.model.ChatTemplate"><span class="pre">ChatTemplate</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attachment_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities_num_embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.compute_token_range">
+<span class="sig-name descname"><span class="pre">compute_token_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence_input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.compute_token_range" title="Link to this definition">¶</a></dt>
+<dd><p>Compute token range for a sample</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of tuples containing elements of the form (start, end) corresponding to the start of modality in the sequence
+and end of modality in the sequence</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.convert_tokens_to_ids">
+<span class="sig-name descname"><span class="pre">convert_tokens_to_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.convert_tokens_to_ids" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.expand_attachment_input_tokens">
+<span class="sig-name descname"><span class="pre">expand_attachment_input_tokens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities_for_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.expand_attachment_input_tokens" title="Link to this definition">¶</a></dt>
+<dd><p>Expands attachment tokens in the token sequence based on the number of embeddings for each modality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>token_ids</strong> (<em>torch.Tensor</em>) – The original sequence of token IDs.</p></li>
+<li><p><strong>attention_mask</strong> (<em>torch.Tensor</em>) – The attention mask corresponding to the token_ids.</p></li>
+<li><p><strong>modalities_for_message</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – A list of modality dictionaries, each containing modality information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The expanded token IDs and corresponding attention mask.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.get_num_embeddings">
+<span class="sig-name descname"><span class="pre">get_num_embeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.get_num_embeddings" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.pad_tokenized">
+<span class="sig-name descname"><span class="pre">pad_tokenized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenized</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.pad_tokenized" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_conversation">
+<span class="sig-name descname"><span class="pre">tokenize_conversation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eos_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_generation_prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_conversation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_samples">
+<span class="sig-name descname"><span class="pre">tokenize_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_samples" title="Link to this definition">¶</a></dt>
+<dd><p>Tokenizes a sample, which can either be a text or a conversation.
+:param sample: The sample to tokenize. It must contain either ‘text’ or ‘conversations’.
+:type sample: Dict[str, Any]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The tokenized sample containing ‘input_ids’, ‘attention_mask’, and ‘labels’.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_text">
+<span class="sig-name descname"><span class="pre">tokenize_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modalities</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.tokenize_text" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.update_with_token_range">
+<span class="sig-name descname"><span class="pre">update_with_token_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenized</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.update_with_token_range" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.validate_tokenized_results">
+<span class="sig-name descname"><span class="pre">validate_tokenized_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.validate_tokenized_results" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.PromptTokenizer.vocab_size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vocab_size</span></span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.PromptTokenizer.vocab_size" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.find_tag_pos">
+<span class="sig-prename descclassname"><span class="pre">multimeditron.model.prompt_tokenizers.</span></span><span class="sig-name descname"><span class="pre">find_tag_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.find_tag_pos" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimeditron.model.prompt_tokenizers.replace_between_tags_v2">
+<span class="sig-prename descclassname"><span class="pre">multimeditron.model.prompt_tokenizers.</span></span><span class="sig-name descname"><span class="pre">replace_between_tags_v2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_tag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimeditron.model.prompt_tokenizers.replace_between_tags_v2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-multimeditron.model">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-multimeditron.model" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="multimeditron.dataset.loader.image.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">multimeditron.dataset.loader.image package</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="multimeditron.model.modalities.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">multimeditron.model.modalities package</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2025, LiGHT laboratory</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials"></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/shibuya.js?v=cac61aee"></script></body>
+</html>

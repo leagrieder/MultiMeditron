@@ -1,0 +1,21 @@
+multimeditron.model.modalities.moe package
+==========================================
+
+Submodules
+----------
+
+multimeditron.model.modalities.moe.gating module
+------------------------------------------------
+
+.. automodule:: multimeditron.model.modalities.moe.gating
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: multimeditron.model.modalities.moe
+   :members:
+   :show-inheritance:
+   :undoc-members:
