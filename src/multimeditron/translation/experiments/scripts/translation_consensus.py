@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
 """
-Multi-model translation pipeline with BATCHED processing.
-Uses Qwen2.5, M2M100, and MADLAD-400 with consensus selection.
+Multi-model translation pipeline for low-resource African/Asian languages.
+Uses TranslateGemma-4B (for supported languages), Qwen3-4B (for unsupported), 
+M2M100, and MADLAD-400 with consensus selection.
+
+TranslateGemma supports: Swahili (sw), Tamil (ta), Zulu (zu)
+Qwen3 used for: Amharic (amh), Hausa (hau), Yoruba (yor)
+
+v4: Added checkpointing to resume after pod restarts
 """
 
 import json
 import os
 import gc
 import re
+import sys
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 import numpy as np
 from tqdm import tqdm
 import argparse
+from datetime import datetime
 
 from transformers import (
     AutoModelForSeq2SeqLM, 
     AutoTokenizer,
+    AutoProcessor,
+    AutoModelForImageTextToText,
     M2M100ForConditionalGeneration, 
     M2M100Tokenizer,
     AutoModelForCausalLM
@@ -34,6 +44,18 @@ except ImportError:
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
+# Flush output immediately for real-time logging
+sys.stdout.reconfigure(line_buffering=True)
+
+# TranslateGemma supported languages (from WMT24++ 55 languages)
+TRANSLATEGEMMA_SUPPORTED = {"swa", "tam", "zul"}  # sw, ta, zu
+QWEN3_LANGUAGES = {"amh", "hau", "yor"}  # Not in TranslateGemma
+
+
+def log(msg: str):
+    """Print with timestamp and flush."""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
 
 def clear_gpu_memory():
     if torch.cuda.is_available():
@@ -43,7 +65,7 @@ def clear_gpu_memory():
 
 
 def is_english(text: str, threshold: float = 0.7) -> bool:
-    """Check if text is primarily English."""
+    """Check if text is primarily English using langdetect or word frequency heuristic."""
     if not text or len(text.strip()) < 10:
         return True
     
@@ -55,6 +77,7 @@ def is_english(text: str, threshold: float = 0.7) -> bool:
         except LangDetectException:
             pass
     
+    # Fallback: count common English words
     common_words = {
         'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
         'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
@@ -74,15 +97,21 @@ def is_english(text: str, threshold: float = 0.7) -> bool:
     return (english_count / len(words)) > threshold
 
 
-def detect_repetition(text: str, word_threshold: float = 0.4, ngram_threshold: int = 4) -> bool:
-    """Check for excessive repetition."""
-    if not text or len(text.strip()) < 20:
+def detect_repetition_strict(text: str, word_threshold: float = 0.5, ngram_threshold: int = 8) -> bool:
+    """
+    Check for excessive word or phrase repetition - ONLY for LLMs like Qwen3.
+    Uses relaxed thresholds to avoid false positives.
+    
+    NOT used for dedicated translation models (TranslateGemma, M2M100, MADLAD).
+    """
+    if not text or len(text.strip()) < 30:
         return False
     
     words = text.strip().split()
-    if len(words) < 5:
+    if len(words) < 10:
         return False
     
+    # Check single word dominance (very relaxed - 50% threshold)
     word_counts = {}
     for word in words:
         word_lower = word.lower()
@@ -91,8 +120,9 @@ def detect_repetition(text: str, word_threshold: float = 0.4, ngram_threshold: i
     if max(word_counts.values()) / len(words) > word_threshold:
         return True
     
-    for n in [2, 3, 4]:
-        if len(words) < n:
+    # Check n-gram repetition (very relaxed - 8+ occurrences)
+    for n in [3, 4]:  # Only check 3-grams and 4-grams
+        if len(words) < n * 2:
             continue
         
         ngrams = {}
@@ -103,17 +133,22 @@ def detect_repetition(text: str, word_threshold: float = 0.4, ngram_threshold: i
         if ngrams and max(ngrams.values()) >= ngram_threshold:
             return True
     
-    if re.search(r'(.)\1{5,}', text):
+    # Check obvious character repetition (e.g., "aaaaaaa")
+    if re.search(r'(.)\1{10,}', text):  # 10+ consecutive same chars
         return True
     
     return False
 
 
 def clean_llm_wrapper_text(text: str) -> str:
-    """Remove LLM preambles and formatting."""
+    """Remove common LLM preambles and formatting."""
     if not text:
         return text
     
+    text = text.strip()
+    
+    # Remove thinking blocks if present (Qwen3 thinking mode)
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
     text = text.strip()
     
     patterns = [
@@ -142,10 +177,12 @@ def clean_llm_wrapper_text(text: str) -> str:
         text = re.sub(pattern, '', text, flags=re.IGNORECASE)
         text = text.strip()
     
+    # Remove surrounding quotes
     if (text.startswith('"') and text.endswith('"')) or \
        (text.startswith("'") and text.endswith("'")):
         text = text[1:-1].strip()
     
+    # Clean markdown
     text = re.sub(r'^\*\*(.+)\*\*$', r'\1', text)
     text = re.sub(r'^`(.+)`$', r'\1', text)
     text = re.sub(r'\s+', ' ', text).strip()
@@ -153,247 +190,422 @@ def clean_llm_wrapper_text(text: str) -> str:
     return text
 
 
-def validate_translation(text: str) -> Tuple[bool, str]:
-    """Validate a single translation. Returns (is_valid, status)."""
-    if not text or len(text) < 3:
-        return False, "error"
-    
-    if is_english(text):
-        return False, "english"
-    
-    if detect_repetition(text):
-        return False, "repetitive"
-    
-    return True, "success"
+# ============================================================
+# Checkpointing Functions
+# ============================================================
+
+def get_checkpoint_path(output_dir: Path, lang: str, model_name: str) -> Path:
+    """Get path for model-specific checkpoint file."""
+    return output_dir / f".checkpoint_{lang}_{model_name}.jsonl"
 
 
-def translate_batch_qwen(
-    texts: List[str],
-    target_lang: str,
-    model,
-    tokenizer,
-    lang_name: str,
-    batch_size: int = 32,
-    max_attempts: int = 5
-) -> Tuple[List[str], List[str]]:
-    """Translate a batch of texts with Qwen, with retry logic."""
+def load_checkpoint(checkpoint_path: Path) -> Tuple[List[str], List[str], int]:
+    """Load translations and statuses from checkpoint file."""
+    translations = []
+    statuses = []
     
-    translations = [""] * len(texts)
-    statuses = [""] * len(texts)
-    retry_indices = list(range(len(texts)))
+    if not checkpoint_path.exists():
+        return translations, statuses, 0
     
-    system_msg = (
-        f"You are a professional translation system. "
-        f"Translate English medical text to {lang_name}. "
-        f"Rules:\n"
-        f"1. Output ONLY the {lang_name} translation\n"
-        f"2. Do NOT add any explanations, acknowledgments, or English text\n"
-        f"3. Do NOT say 'here is the translation' or similar phrases\n"
-        f"4. Do NOT wrap the translation in quotes\n"
-        f"5. Preserve all medical terminology accurately"
-    )
+    with open(checkpoint_path, 'r') as f:
+        for line in f:
+            entry = json.loads(line)
+            translations.append(entry['translation'])
+            statuses.append(entry['status'])
+    
+    return translations, statuses, len(translations)
+
+
+def save_checkpoint_entry(checkpoint_path: Path, translation: str, status: str):
+    """Append a single translation to checkpoint file."""
+    with open(checkpoint_path, 'a') as f:
+        f.write(json.dumps({'translation': translation, 'status': status}, ensure_ascii=False) + '\n')
+
+
+def clear_checkpoint(checkpoint_path: Path):
+    """Remove checkpoint file after successful completion."""
+    if checkpoint_path.exists():
+        checkpoint_path.unlink()
+
+
+# ============================================================
+# TranslateGemma-4B (for Swahili, Tamil, Zulu)
+# ============================================================
+
+def translate_single_translategemma(text: str, target_lang: str, model, processor,
+                                    tgt_lang_code: str, sample_idx: int = 0,
+                                    max_attempts: int = 3) -> Tuple[str, str]:
+    """Translate text with TranslateGemma-4B. No repetition check needed."""
+    
+    if sample_idx == 0:
+        log("Starting first TranslateGemma inference...")
     
     for attempt in range(1, max_attempts + 1):
-        if not retry_indices:
-            break
-        
-        batch_texts = [texts[i] for i in retry_indices]
-        batch_results = []
-        
-        # Process in mini-batches
-        for i in range(0, len(batch_texts), batch_size):
-            mini_batch = batch_texts[i:i+batch_size]
+        try:
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "source_lang_code": "en",
+                            "target_lang_code": tgt_lang_code,
+                            "text": text,
+                        }
+                    ],
+                }
+            ]
             
-            try:
-                # Create prompts for all texts in mini-batch
-                prompts = []
-                for text in mini_batch:
-                    messages = [
-                        {"role": "system", "content": system_msg},
-                        {"role": "user", "content": f"Translate this to {lang_name}:\n\n{text}"}
-                    ]
-                    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-                    prompts.append(prompt)
-                
-                # Tokenize batch
-                inputs = tokenizer(
-                    prompts,
-                    return_tensors="pt",
-                    padding=True,
-                    truncation=True,
-                    max_length=512
-                )
-                inputs = {k: v.to(model.device) for k, v in inputs.items()}
-                
-                # Generate batch
-                outputs = model.generate(
-                    **inputs,
+            inputs = processor.apply_chat_template(
+                messages, 
+                tokenize=True, 
+                add_generation_prompt=True, 
+                return_dict=True, 
+                return_tensors="pt"
+            ).to(model.device, dtype=torch.bfloat16)
+            
+            input_len = len(inputs['input_ids'][0])
+            
+            with torch.inference_mode():
+                generation = model.generate(
+                    **inputs, 
                     max_new_tokens=512,
-                    do_sample=False,
-                    temperature=1.0,
-                    repetition_penalty=1.2,
-                    no_repeat_ngram_size=3,
-                    pad_token_id=tokenizer.pad_token_id
+                    do_sample=False
                 )
-                
-                # Decode batch
-                for j, output in enumerate(outputs):
-                    input_len = inputs['input_ids'][j].shape[0]
-                    generated_ids = output[input_len:]
-                    result = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
-                    result = clean_llm_wrapper_text(result)
-                    batch_results.append(result)
-                
-            except Exception as e:
-                print(f"    Batch error (attempt {attempt}): {e}")
-                batch_results.extend([""] * len(mini_batch))
-        
-        # Validate results and update retry list
-        new_retry_indices = []
-        for idx, orig_idx in enumerate(retry_indices):
-            result = batch_results[idx]
-            is_valid, status = validate_translation(result)
             
-            if is_valid or attempt == max_attempts:
-                translations[orig_idx] = result
-                statuses[orig_idx] = status
-            else:
-                new_retry_indices.append(orig_idx)
-        
-        retry_indices = new_retry_indices
+            generation = generation[0][input_len:]
+            result = processor.decode(generation, skip_special_tokens=True).strip()
+            
+            if sample_idx == 0 and attempt == 1:
+                log("First TranslateGemma inference complete!")
+            
+            if not result or len(result) < 3:
+                if attempt < max_attempts:
+                    continue
+                return "", "error"
+            
+            # Only check if output is English (failed translation)
+            # No repetition check - TranslateGemma is a dedicated translation model
+            if is_english(result):
+                if attempt < max_attempts:
+                    continue
+                return result, "english"
+            
+            return result, "success"
+            
+        except Exception as e:
+            if sample_idx < 3:
+                log(f"TranslateGemma sample {sample_idx} attempt {attempt} error: {str(e)[:100]}")
+            if attempt < max_attempts:
+                continue
+            return "", "error"
     
-    # Mark any remaining failures
-    for idx in retry_indices:
-        if not statuses[idx]:
-            statuses[idx] = "error"
+    return "", "error"
+
+
+def translate_with_translategemma(texts: List[str], target_lang: str, 
+                                  output_dir: Path) -> Tuple[List[str], List[str]]:
+    """Batch translate with TranslateGemma-4B with checkpointing."""
+    
+    # Check for existing checkpoint
+    checkpoint_path = get_checkpoint_path(output_dir, target_lang, "translategemma")
+    translations, statuses, start_idx = load_checkpoint(checkpoint_path)
+    
+    if start_idx > 0:
+        log(f"[1/3] Resuming TranslateGemma-4B from index {start_idx}/{len(texts)}...")
+    else:
+        log("[1/3] Loading TranslateGemma-4B...")
+    
+    # Language code mapping for TranslateGemma (ISO 639-1)
+    lang_codes = {
+        "swa": "sw",  # Swahili
+        "tam": "ta",  # Tamil
+        "zul": "zu",  # Zulu
+    }
+    tgt_lang_code = lang_codes.get(target_lang, target_lang)
+    
+    lang_names = {
+        "swa": "Swahili", "tam": "Tamil", "zul": "Zulu"
+    }
+    lang_name = lang_names.get(target_lang, target_lang)
+    
+    # If already complete, return cached results
+    if start_idx >= len(texts):
+        log(f"TranslateGemma already complete for {lang_name}! Using cached {len(translations)} translations.")
+        return translations, statuses
+    
+    model_id = "google/translategemma-4b-it"
+    log(f"Loading processor from {model_id}...")
+    processor = AutoProcessor.from_pretrained(model_id)
+    
+    log(f"Loading model from {model_id}...")
+    model = AutoModelForImageTextToText.from_pretrained(
+        model_id, 
+        device_map="auto",
+        torch_dtype=torch.bfloat16
+    )
+    log(f"Model loaded! Translating {len(texts) - start_idx} remaining texts to {lang_name}...")
+    
+    status_counts = {"success": 0, "english": 0, "error": 0}
+    # Count existing statuses
+    for s in statuses:
+        if s in status_counts:
+            status_counts[s] += 1
+    
+    for i in tqdm(range(start_idx, len(texts)), desc="TranslateGemma", initial=start_idx, total=len(texts)):
+        text = texts[i]
+        translation, status = translate_single_translategemma(
+            text, target_lang, model, processor, tgt_lang_code, sample_idx=i
+        )
+        translations.append(translation)
+        statuses.append(status)
+        status_counts[status] += 1
+        
+        # Save checkpoint after each translation
+        save_checkpoint_entry(checkpoint_path, translation, status)
+        
+        # Log first 5 individually, then every 10, then every 50 after 100
+        if i < 5 or (i < 100 and (i + 1) % 10 == 0) or (i + 1) % 50 == 0:
+            log(f"TranslateGemma [{i+1}/{len(texts)}] ✓:{status_counts['success']} "
+                f"eng:{status_counts['english']} err:{status_counts['error']}")
+    
+    del model, processor
+    clear_gpu_memory()
+    
+    log(f"TranslateGemma DONE: {status_counts['success']} ok, {status_counts['english']} english, "
+        f"{status_counts['error']} errors")
     
     return translations, statuses
 
 
-def translate_with_qwen(
-    texts: List[str],
-    target_lang: str,
-    model_size: str = "3B-Instruct",
-    batch_size: int = 32
-) -> Tuple[List[str], List[str]]:
-    """Batch translate with Qwen."""
-    print(f"\n[1/3] Loading Qwen2.5-{model_size}...")
+# ============================================================
+# Qwen3-4B (for Amharic, Hausa, Yoruba)
+# ============================================================
+
+def translate_single_qwen3(text: str, target_lang: str, model, tokenizer, 
+                          lang_name: str, sample_idx: int = 0, 
+                          max_attempts: int = 3) -> Tuple[str, str]:
+    """Translate text with Qwen3, retrying on failures. Includes relaxed repetition check."""
+    
+    if sample_idx == 0:
+        log("Starting first Qwen3 inference (CUDA warmup may take 1-2 min)...")
+    
+    for attempt in range(1, max_attempts + 1):
+        try:
+            system_msg = (
+                f"You are a professional translator. "
+                f"Translate the following English medical text to {lang_name}. "
+                f"Output ONLY the {lang_name} translation, nothing else. "
+                f"Do not add explanations, acknowledgments, or any English text."
+            )
+            
+            messages = [
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": text}
+            ]
+            
+            # Use enable_thinking=False for faster inference (no reasoning)
+            prompt = tokenizer.apply_chat_template(
+                messages, 
+                tokenize=False, 
+                add_generation_prompt=True,
+                enable_thinking=False
+            )
+            inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
+            
+            # Non-thinking mode recommended params from Qwen3 docs
+            outputs = model.generate(
+                **inputs, 
+                max_new_tokens=512, 
+                do_sample=True,
+                temperature=0.7,
+                top_p=0.8,
+                top_k=20,
+                repetition_penalty=1.5,
+                no_repeat_ngram_size=3
+            )
+            
+            if sample_idx == 0 and attempt == 1:
+                log("First Qwen3 inference complete!")
+            
+            generated_ids = outputs[0][inputs['input_ids'].shape[1]:]
+            result = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+            result = clean_llm_wrapper_text(result)
+            
+            if not result or len(result) < 3:
+                if attempt < max_attempts:
+                    continue
+                return "", "error"
+            
+            if is_english(result):
+                if attempt < max_attempts:
+                    continue
+                return result, "english"
+            
+            # Relaxed repetition check only for Qwen3 (LLM, not dedicated translator)
+            if detect_repetition_strict(result):
+                if attempt < max_attempts:
+                    continue
+                return result, "repetitive"
+            
+            return result, "success"
+            
+        except Exception as e:
+            if sample_idx < 3:
+                log(f"Qwen3 sample {sample_idx} attempt {attempt} error: {str(e)[:100]}")
+            if attempt < max_attempts:
+                continue
+            return "", "error"
+    
+    return "", "error"
+
+
+def translate_with_qwen3(texts: List[str], target_lang: str, 
+                        output_dir: Path,
+                        model_size: str = "4B") -> Tuple[List[str], List[str]]:
+    """Batch translate with Qwen3 with checkpointing."""
+    
+    # Check for existing checkpoint
+    checkpoint_path = get_checkpoint_path(output_dir, target_lang, "qwen3")
+    translations, statuses, start_idx = load_checkpoint(checkpoint_path)
+    
+    if start_idx > 0:
+        log(f"[1/3] Resuming Qwen3-{model_size} from index {start_idx}/{len(texts)}...")
+    else:
+        log(f"[1/3] Loading Qwen3-{model_size}...")
     
     lang_names = {
-        "amh": "Amharic", "swa": "Swahili", "tam": "Tamil",
-        "hau": "Hausa", "yor": "Yoruba", "zul": "Zulu"
+        "amh": "Amharic", "hau": "Hausa", "yor": "Yoruba"
     }
     lang_name = lang_names.get(target_lang, target_lang)
     
-    tokenizer = AutoTokenizer.from_pretrained(f"Qwen/Qwen2.5-{model_size}", trust_remote_code=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    # If already complete, return cached results
+    if start_idx >= len(texts):
+        log(f"Qwen3 already complete for {lang_name}! Using cached {len(translations)} translations.")
+        return translations, statuses
     
+    model_name = f"Qwen/Qwen3-{model_size}"
+    log(f"Loading tokenizer from {model_name}...")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    
+    log(f"Loading model from {model_name}...")
     model = AutoModelForCausalLM.from_pretrained(
-        f"Qwen/Qwen2.5-{model_size}",
-        torch_dtype=torch.float16,
+        model_name,
+        torch_dtype=torch.bfloat16,
         device_map="auto",
         trust_remote_code=True
     )
-    
-    print(f"Translating {len(texts)} texts (batch_size={batch_size})...")
-    translations, statuses = translate_batch_qwen(texts, target_lang, model, tokenizer, lang_name, batch_size)
+    log(f"Model loaded! Translating {len(texts) - start_idx} remaining texts to {lang_name}...")
     
     status_counts = {"success": 0, "english": 0, "repetitive": 0, "error": 0}
+    # Count existing statuses
     for s in statuses:
-        status_counts[s] = status_counts.get(s, 0) + 1
+        if s in status_counts:
+            status_counts[s] += 1
+    
+    for i in tqdm(range(start_idx, len(texts)), desc="Qwen3", initial=start_idx, total=len(texts)):
+        text = texts[i]
+        translation, status = translate_single_qwen3(
+            text, target_lang, model, tokenizer, lang_name, sample_idx=i
+        )
+        translations.append(translation)
+        statuses.append(status)
+        status_counts[status] += 1
+        
+        # Save checkpoint after each translation
+        save_checkpoint_entry(checkpoint_path, translation, status)
+        
+        # Log first 5 individually, then every 10, then every 50 after 100
+        if i < 5 or (i < 100 and (i + 1) % 10 == 0) or (i + 1) % 50 == 0:
+            log(f"Qwen3 [{i+1}/{len(texts)}] ✓:{status_counts['success']} "
+                f"eng:{status_counts['english']} rep:{status_counts['repetitive']} "
+                f"err:{status_counts['error']}")
     
     del model, tokenizer
     clear_gpu_memory()
     
-    print(f"Qwen2.5 complete: {status_counts['success']} ok, {status_counts['english']} english, "
-          f"{status_counts['repetitive']} repetitive, {status_counts['error']} errors")
+    log(f"Qwen3 DONE: {status_counts['success']} ok, {status_counts['english']} english, "
+        f"{status_counts['repetitive']} repetitive, {status_counts['error']} errors")
     
     return translations, statuses
 
 
-def translate_batch_m2m100(
-    texts: List[str],
-    target_lang: str,
-    model,
-    tokenizer,
-    tgt_lang: str,
-    batch_size: int = 32,
-    max_attempts: int = 5
-) -> Tuple[List[str], List[str]]:
-    """Translate batch with M2M100, with retry logic."""
+# ============================================================
+# M2M100 (dedicated translation model - no repetition check)
+# ============================================================
+
+def translate_single_m2m100(text: str, target_lang: str, model, tokenizer, 
+                           tgt_lang: str, sample_idx: int = 0,
+                           max_attempts: int = 3) -> Tuple[str, str]:
+    """Translate text with M2M100. No repetition check needed."""
     
-    translations = [""] * len(texts)
-    statuses = [""] * len(texts)
-    retry_indices = list(range(len(texts)))
-    
-    tokenizer.src_lang = "en"
+    if sample_idx == 0:
+        log("Starting first M2M100 inference...")
     
     for attempt in range(1, max_attempts + 1):
-        if not retry_indices:
-            break
-        
-        batch_texts = [texts[i] for i in retry_indices]
-        batch_results = []
-        
-        for i in range(0, len(batch_texts), batch_size):
-            mini_batch = batch_texts[i:i+batch_size]
+        try:
+            tokenizer.src_lang = "en"
+            encoded = tokenizer(text, return_tensors="pt", padding=True, 
+                              truncation=True, max_length=512).to(device)
+            generated = model.generate(
+                **encoded, 
+                forced_bos_token_id=tokenizer.get_lang_id(tgt_lang),
+                max_length=512, 
+                num_beams=5, 
+                no_repeat_ngram_size=3, 
+                repetition_penalty=1.3
+            )
             
-            try:
-                encoded = tokenizer(
-                    mini_batch,
-                    return_tensors="pt",
-                    padding=True,
-                    truncation=True,
-                    max_length=512
-                ).to(device)
-                
-                generated = model.generate(
-                    **encoded,
-                    forced_bos_token_id=tokenizer.get_lang_id(tgt_lang),
-                    max_length=512,
-                    num_beams=5,
-                    no_repeat_ngram_size=3,
-                    repetition_penalty=1.3
-                )
-                
-                results = tokenizer.batch_decode(generated, skip_special_tokens=True)
-                batch_results.extend([r.strip() for r in results])
-                
-            except Exception as e:
-                print(f"    Batch error (attempt {attempt}): {e}")
-                batch_results.extend([""] * len(mini_batch))
-        
-        new_retry_indices = []
-        for idx, orig_idx in enumerate(retry_indices):
-            result = batch_results[idx]
-            is_valid, status = validate_translation(result)
+            if sample_idx == 0 and attempt == 1:
+                log("First M2M100 inference complete!")
             
-            if is_valid or attempt == max_attempts:
-                translations[orig_idx] = result
-                statuses[orig_idx] = status
-            else:
-                new_retry_indices.append(orig_idx)
-        
-        retry_indices = new_retry_indices
+            result = tokenizer.batch_decode(generated, skip_special_tokens=True)[0].strip()
+            
+            if not result or len(result) < 3:
+                if attempt < max_attempts:
+                    continue
+                return "", "error"
+            
+            # Only check if output is English (failed translation)
+            # No repetition check - M2M100 is a dedicated translation model
+            if is_english(result):
+                if attempt < max_attempts:
+                    continue
+                return result, "english"
+            
+            return result, "success"
+            
+        except Exception as e:
+            if sample_idx < 3:
+                log(f"M2M100 sample {sample_idx} attempt {attempt} error: {str(e)[:100]}")
+            if attempt < max_attempts:
+                continue
+            return "", "error"
     
-    for idx in retry_indices:
-        if not statuses[idx]:
-            statuses[idx] = "error"
-    
-    return translations, statuses
+    return "", "error"
 
 
-def translate_with_m2m100(
-    texts: List[str],
-    target_lang: str,
-    batch_size: int = 32
-) -> Tuple[List[str], List[str]]:
-    """Batch translate with M2M100."""
-    print(f"\n[2/3] Loading M2M100...")
+def translate_with_m2m100(texts: List[str], target_lang: str,
+                          output_dir: Path) -> Tuple[List[str], List[str]]:
+    """Batch translate with M2M100 with checkpointing."""
+    
+    # Check for existing checkpoint
+    checkpoint_path = get_checkpoint_path(output_dir, target_lang, "m2m100")
+    translations, statuses, start_idx = load_checkpoint(checkpoint_path)
+    
+    if start_idx > 0:
+        log(f"[2/3] Resuming M2M100 from index {start_idx}/{len(texts)}...")
+    else:
+        log("[2/3] Loading M2M100...")
     
     lang_codes = {"amh": "am", "swa": "sw", "tam": "ta", "hau": "ha", "yor": "yo", "zul": "zu"}
     tgt_lang = lang_codes.get(target_lang, target_lang)
+    
+    # If already complete, return cached results
+    if start_idx >= len(texts):
+        log(f"M2M100 already complete! Using cached {len(translations)} translations.")
+        return translations, statuses
     
     tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
     model = M2M100ForConditionalGeneration.from_pretrained(
@@ -401,103 +613,115 @@ def translate_with_m2m100(
         torch_dtype=torch.float16
     ).to(device)
     
-    print(f"Translating {len(texts)} texts (batch_size={batch_size})...")
-    translations, statuses = translate_batch_m2m100(texts, target_lang, model, tokenizer, tgt_lang, batch_size)
+    log(f"M2M100 loaded! Translating {len(texts) - start_idx} remaining texts...")
     
-    status_counts = {"success": 0, "english": 0, "repetitive": 0, "error": 0}
+    status_counts = {"success": 0, "english": 0, "error": 0}
+    # Count existing statuses
     for s in statuses:
-        status_counts[s] = status_counts.get(s, 0) + 1
+        if s in status_counts:
+            status_counts[s] += 1
+    
+    for i in tqdm(range(start_idx, len(texts)), desc="M2M100", initial=start_idx, total=len(texts)):
+        text = texts[i]
+        translation, status = translate_single_m2m100(
+            text, target_lang, model, tokenizer, tgt_lang, sample_idx=i
+        )
+        translations.append(translation)
+        statuses.append(status)
+        status_counts[status] += 1
+        
+        # Save checkpoint after each translation
+        save_checkpoint_entry(checkpoint_path, translation, status)
+        
+        # Log first 5 individually, then every 10, then every 50 after 100
+        if i < 5 or (i < 100 and (i + 1) % 10 == 0) or (i + 1) % 50 == 0:
+            log(f"M2M100 [{i+1}/{len(texts)}] ✓:{status_counts['success']} "
+                f"eng:{status_counts['english']} err:{status_counts['error']}")
     
     del model, tokenizer
     clear_gpu_memory()
     
-    print(f"M2M100 complete: {status_counts['success']} ok, {status_counts['english']} english, "
-          f"{status_counts['repetitive']} repetitive, {status_counts['error']} errors")
+    log(f"M2M100 DONE: {status_counts['success']} ok, {status_counts['english']} english, "
+        f"{status_counts['error']} errors")
     
     return translations, statuses
 
 
-def translate_batch_madlad(
-    texts: List[str],
-    target_lang: str,
-    model,
-    tokenizer,
-    tgt_lang: str,
-    batch_size: int = 32,
-    max_attempts: int = 5
-) -> Tuple[List[str], List[str]]:
-    """Translate batch with MADLAD, with retry logic."""
+# ============================================================
+# MADLAD-400 (dedicated translation model - no repetition check)
+# ============================================================
+
+def translate_single_madlad(text: str, target_lang: str, model, tokenizer, 
+                           tgt_lang: str, sample_idx: int = 0,
+                           max_attempts: int = 3) -> Tuple[str, str]:
+    """Translate text with MADLAD. No repetition check needed."""
     
-    translations = [""] * len(texts)
-    statuses = [""] * len(texts)
-    retry_indices = list(range(len(texts)))
+    if sample_idx == 0:
+        log("Starting first MADLAD inference...")
     
     for attempt in range(1, max_attempts + 1):
-        if not retry_indices:
-            break
-        
-        batch_texts = [texts[i] for i in retry_indices]
-        batch_results = []
-        
-        for i in range(0, len(batch_texts), batch_size):
-            mini_batch = batch_texts[i:i+batch_size]
+        try:
+            prompt = f"<2{tgt_lang}> {text}"
+            inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
             
-            try:
-                prompts = [f"<2{tgt_lang}> {text}" for text in mini_batch]
-                inputs = tokenizer(
-                    prompts,
-                    return_tensors="pt",
-                    padding=True,
-                    truncation=True,
-                    max_length=512
-                )
-                inputs = {k: v.to(model.device) for k, v in inputs.items()}
-                
-                outputs = model.generate(
-                    **inputs,
-                    max_length=512,
-                    num_beams=5,
-                    no_repeat_ngram_size=3,
-                    repetition_penalty=1.3
-                )
-                
-                results = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-                batch_results.extend([r.strip() for r in results])
-                
-            except Exception as e:
-                print(f"    Batch error (attempt {attempt}): {e}")
-                batch_results.extend([""] * len(mini_batch))
-        
-        new_retry_indices = []
-        for idx, orig_idx in enumerate(retry_indices):
-            result = batch_results[idx]
-            is_valid, status = validate_translation(result)
+            outputs = model.generate(
+                **inputs, 
+                max_length=512, 
+                num_beams=5, 
+                no_repeat_ngram_size=3, 
+                repetition_penalty=1.3
+            )
             
-            if is_valid or attempt == max_attempts:
-                translations[orig_idx] = result
-                statuses[orig_idx] = status
-            else:
-                new_retry_indices.append(orig_idx)
-        
-        retry_indices = new_retry_indices
+            if sample_idx == 0 and attempt == 1:
+                log("First MADLAD inference complete!")
+            
+            result = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+            
+            if not result or len(result) < 3:
+                if attempt < max_attempts:
+                    continue
+                return "", "error"
+            
+            # Only check if output is English (failed translation)
+            # No repetition check - MADLAD is a dedicated translation model
+            if is_english(result):
+                if attempt < max_attempts:
+                    continue
+                return result, "english"
+            
+            return result, "success"
+            
+        except Exception as e:
+            if sample_idx < 3:
+                log(f"MADLAD sample {sample_idx} attempt {attempt} error: {str(e)[:100]}")
+            if attempt < max_attempts:
+                continue
+            return "", "error"
     
-    for idx in retry_indices:
-        if not statuses[idx]:
-            statuses[idx] = "error"
-    
-    return translations, statuses
+    return "", "error"
 
 
-def translate_with_madlad(
-    texts: List[str],
-    target_lang: str,
-    batch_size: int = 32
-) -> Tuple[List[str], List[str]]:
-    """Batch translate with MADLAD."""
-    print(f"\n[3/3] Loading MADLAD-400...")
+def translate_with_madlad(texts: List[str], target_lang: str,
+                          output_dir: Path) -> Tuple[List[str], List[str]]:
+    """Batch translate with MADLAD with checkpointing."""
+    
+    # Check for existing checkpoint
+    checkpoint_path = get_checkpoint_path(output_dir, target_lang, "madlad")
+    translations, statuses, start_idx = load_checkpoint(checkpoint_path)
+    
+    if start_idx > 0:
+        log(f"[3/3] Resuming MADLAD-400 from index {start_idx}/{len(texts)}...")
+    else:
+        log("[3/3] Loading MADLAD-400...")
     
     lang_codes = {"amh": "amh", "swa": "swa", "tam": "tam", "hau": "hau", "yor": "yor", "zul": "zul"}
     tgt_lang = lang_codes.get(target_lang, target_lang)
+    
+    # If already complete, return cached results
+    if start_idx >= len(texts):
+        log(f"MADLAD already complete! Using cached {len(translations)} translations.")
+        return translations, statuses
     
     tokenizer = AutoTokenizer.from_pretrained("google/madlad400-3b-mt")
     model = AutoModelForSeq2SeqLM.from_pretrained(
@@ -506,49 +730,63 @@ def translate_with_madlad(
         device_map="auto"
     )
     
-    print(f"Translating {len(texts)} texts (batch_size={batch_size})...")
-    translations, statuses = translate_batch_madlad(texts, target_lang, model, tokenizer, tgt_lang, batch_size)
+    log(f"MADLAD loaded! Translating {len(texts) - start_idx} remaining texts...")
     
-    status_counts = {"success": 0, "english": 0, "repetitive": 0, "error": 0}
+    status_counts = {"success": 0, "english": 0, "error": 0}
+    # Count existing statuses
     for s in statuses:
-        status_counts[s] = status_counts.get(s, 0) + 1
+        if s in status_counts:
+            status_counts[s] += 1
+    
+    for i in tqdm(range(start_idx, len(texts)), desc="MADLAD-400", initial=start_idx, total=len(texts)):
+        text = texts[i]
+        translation, status = translate_single_madlad(
+            text, target_lang, model, tokenizer, tgt_lang, sample_idx=i
+        )
+        translations.append(translation)
+        statuses.append(status)
+        status_counts[status] += 1
+        
+        # Save checkpoint after each translation
+        save_checkpoint_entry(checkpoint_path, translation, status)
+        
+        # Log first 5 individually, then every 10, then every 50 after 100
+        if i < 5 or (i < 100 and (i + 1) % 10 == 0) or (i + 1) % 50 == 0:
+            log(f"MADLAD [{i+1}/{len(texts)}] ✓:{status_counts['success']} "
+                f"eng:{status_counts['english']} err:{status_counts['error']}")
     
     del model, tokenizer
     clear_gpu_memory()
     
-    print(f"MADLAD-400 complete: {status_counts['success']} ok, {status_counts['english']} english, "
-          f"{status_counts['repetitive']} repetitive, {status_counts['error']} errors")
+    log(f"MADLAD DONE: {status_counts['success']} ok, {status_counts['english']} english, "
+        f"{status_counts['error']} errors")
     
     return translations, statuses
 
 
-def compute_consensus_with_fallback(
-    all_translations: Dict[str, List[str]],
-    all_statuses: Dict[str, List[str]]
-) -> Tuple[List[str], List[str], List[Dict], List[str], List[int]]:
-    """Select best translation per entry using BLEU/chrF consensus."""
+# ============================================================
+# Consensus Selection
+# ============================================================
+
+def compute_consensus_with_fallback(all_translations: Dict[str, List[str]],
+                                    all_statuses: Dict[str, List[str]],
+                                    primary_model: str) -> Tuple[List[str], List[str], List[Dict], List[str], List[int]]:
+    """Select best translation per entry using BLEU/chrF consensus with fallback logic."""
     bleu = BLEU(effective_order=True)
     chrf = CHRF()
     
-    num_entries = len(all_translations["qwen2.5"])
+    num_entries = len(all_translations[primary_model])
     best_translations = []
     best_models = []
     all_scores = []
     final_statuses = []
     skipped_indices = []
     
+    model_keys = list(all_translations.keys())
+    
     for i in range(num_entries):
-        translations = {
-            "qwen2.5": all_translations["qwen2.5"][i],
-            "m2m100": all_translations["m2m100"][i],
-            "madlad-400": all_translations["madlad-400"][i]
-        }
-        
-        statuses = {
-            "qwen2.5": all_statuses["qwen2.5"][i],
-            "m2m100": all_statuses["m2m100"][i],
-            "madlad-400": all_statuses["madlad-400"][i]
-        }
+        translations = {k: all_translations[k][i] for k in model_keys}
+        statuses = {k: all_statuses[k][i] for k in model_keys}
         
         successful = {k: v for k, v in translations.items() if v and statuses[k] == "success"}
         
@@ -578,7 +816,7 @@ def compute_consensus_with_fallback(
             final_statuses.append("success")
             continue
         
-        # All models failed - skip
+        # All models failed - skip this entry entirely
         skipped_indices.append(i)
         best_translations.append(None)
         best_models.append("skipped")
@@ -589,25 +827,33 @@ def compute_consensus_with_fallback(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Multi-model translation pipeline with batching")
-    parser.add_argument("--input", type=str,
+    parser = argparse.ArgumentParser(description="Multi-model translation pipeline")
+    parser.add_argument("--input", type=str, 
                        default="/mloscratch/users/nemo/datasets/guidelines/chunked_eng.jsonl")
-    parser.add_argument("--output", type=str,
-                       default="src/multimeditron/translation/datasets/generated_datasets/consensus")
+    parser.add_argument("--output", type=str, 
+                       default="/mloscratch/users/grieder/MeditronPolyglot/MultiMeditron/src/multimeditron/translation/datasets/generated_datasets/consensus")
     parser.add_argument("--languages", nargs="+", default=["amh", "swa", "tam", "hau", "yor", "zul"])
     parser.add_argument("--sample", type=int, default=None)
-    parser.add_argument("--qwen-size", type=str, default="3B-Instruct")
-    parser.add_argument("--batch-size", type=int, default=32, help="Batch size for translation")
+    parser.add_argument("--qwen-size", type=str, default="4B")
     
     args = parser.parse_args()
     
-    print("="*60)
-    print("Multi-Model Translation Pipeline (BATCHED)")
-    print("Models: Qwen2.5, M2M100, MADLAD-400")
-    print(f"Batch size: {args.batch_size}")
-    print("="*60)
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    print(f"\nLoading dataset from {args.input}...")
+    log("="*60)
+    log("Multi-Model Translation Pipeline v4 (with checkpointing)")
+    log("TranslateGemma-4B for: swa, tam, zul")
+    log(f"Qwen3-{args.qwen_size} for: amh, hau, yor")
+    log("M2M100 + MADLAD-400 for all languages")
+    log(f"Input: {args.input}")
+    log(f"Output: {args.output}")
+    log(f"Languages: {args.languages}")
+    log(f"Sample: {args.sample}")
+    log("Checkpoints will be saved to output directory")
+    log("="*60)
+    
+    log(f"Loading dataset from {args.input}...")
     with open(args.input, 'r') as f:
         data = [json.loads(line) for line in f]
     
@@ -616,35 +862,46 @@ def main():
     
     texts = [entry.get('text', entry.get('content', '')) for entry in data]
     texts = [t for t in texts if t]
-    print(f"Loaded {len(texts)} texts")
+    log(f"Loaded {len(texts)} texts")
     
     for lang in args.languages:
-        print(f"\n{'='*60}")
-        print(f"Processing {lang.upper()}")
-        print(f"{'='*60}")
+        log("")
+        log("="*60)
+        log(f"Processing {lang.upper()}")
+        log("="*60)
         
         all_translations = {}
         all_statuses = {}
         
-        qwen_trans, qwen_status = translate_with_qwen(texts, lang, args.qwen_size, args.batch_size)
-        all_translations["qwen2.5"] = qwen_trans
-        all_statuses["qwen2.5"] = qwen_status
+        # Choose primary model based on language support
+        if lang in TRANSLATEGEMMA_SUPPORTED:
+            log(f"Using TranslateGemma-4B as primary model for {lang}")
+            primary_trans, primary_status = translate_with_translategemma(texts, lang, output_dir)
+            primary_model = "translategemma"
+        else:
+            log(f"Using Qwen3-{args.qwen_size} as primary model for {lang} (not in TranslateGemma)")
+            primary_trans, primary_status = translate_with_qwen3(texts, lang, output_dir, args.qwen_size)
+            primary_model = "qwen3"
         
-        m2m_trans, m2m_status = translate_with_m2m100(texts, lang, args.batch_size)
+        all_translations[primary_model] = primary_trans
+        all_statuses[primary_model] = primary_status
+        
+        # M2M100 for all languages
+        m2m_trans, m2m_status = translate_with_m2m100(texts, lang, output_dir)
         all_translations["m2m100"] = m2m_trans
         all_statuses["m2m100"] = m2m_status
         
-        madlad_trans, madlad_status = translate_with_madlad(texts, lang, args.batch_size)
+        # MADLAD for all languages
+        madlad_trans, madlad_status = translate_with_madlad(texts, lang, output_dir)
         all_translations["madlad-400"] = madlad_trans
         all_statuses["madlad-400"] = madlad_status
         
-        print(f"\nComputing consensus...")
+        log("Computing consensus...")
         best_translations, best_models, scores, final_statuses, skipped = compute_consensus_with_fallback(
-            all_translations, all_statuses
+            all_translations, all_statuses, primary_model
         )
         
-        output_file = Path(args.output) / f"{lang}_train.jsonl"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f"{lang}_train.jsonl"
         
         saved_count = 0
         with open(output_file, 'w') as f:
@@ -660,22 +917,20 @@ def main():
                     "translation_model": best_models[i],
                     "translation_status": final_statuses[i],
                     "consensus_scores": scores[i],
-                    "all_translations": {
-                        "qwen2.5": all_translations["qwen2.5"][i],
-                        "m2m100": all_translations["m2m100"][i],
-                        "madlad-400": all_translations["madlad-400"][i]
-                    },
-                    "all_statuses": {
-                        "qwen2.5": all_statuses["qwen2.5"][i],
-                        "m2m100": all_statuses["m2m100"][i],
-                        "madlad-400": all_statuses["madlad-400"][i]
-                    }
+                    "all_translations": {k: all_translations[k][i] for k in all_translations},
+                    "all_statuses": {k: all_statuses[k][i] for k in all_statuses}
                 }
                 f.write(json.dumps(output, ensure_ascii=False) + '\n')
                 saved_count += 1
         
-        print(f"\nSaved: {output_file}")
-        print(f"Saved {saved_count} translations (skipped {len(skipped)} failed entries)")
+        log(f"Saved: {output_file}")
+        log(f"Saved {saved_count} translations (skipped {len(skipped)} failed entries)")
+        
+        # Clean up checkpoint files after successful completion
+        for model_name in ["translategemma", "qwen3", "m2m100", "madlad"]:
+            checkpoint_path = get_checkpoint_path(output_dir, lang, model_name)
+            clear_checkpoint(checkpoint_path)
+        log(f"Cleaned up checkpoint files for {lang}")
         
         valid_models = [m for i, m in enumerate(best_models) if i not in skipped]
         valid_statuses = [s for i, s in enumerate(final_statuses) if i not in skipped]
@@ -684,28 +939,29 @@ def main():
         for m in valid_models:
             model_counts[m] = model_counts.get(m, 0) + 1
         
-        print(f"\nModel distribution:")
+        log("Model distribution:")
         for model, count in sorted(model_counts.items(), key=lambda x: -x[1]):
             pct = count / len(valid_models) * 100 if valid_models else 0
-            print(f"  {model:15s}: {count:5d} ({pct:5.1f}%)")
+            log(f"  {model:15s}: {count:5d} ({pct:5.1f}%)")
         
         status_counts = {}
         for s in valid_statuses:
             status_counts[s] = status_counts.get(s, 0) + 1
         
-        print(f"\nFinal status:")
+        log("Final status:")
         for status, count in sorted(status_counts.items(), key=lambda x: -x[1]):
             pct = count / len(valid_statuses) * 100 if valid_statuses else 0
-            print(f"  {status:20s}: {count:5d} ({pct:5.1f}%)")
+            log(f"  {status:20s}: {count:5d} ({pct:5.1f}%)")
         
-        successful_scores = [s[m] for i, (s, m, fs) in enumerate(zip(scores, best_models, final_statuses))
+        successful_scores = [s[m] for i, (s, m, fs) in enumerate(zip(scores, best_models, final_statuses)) 
                            if i not in skipped and m in s and fs == "success"]
         if successful_scores:
-            print(f"\nAverage consensus score: {np.mean(successful_scores):.2f}")
+            log(f"Average consensus score: {np.mean(successful_scores):.2f}")
     
-    print("\n" + "="*60)
-    print("Complete")
-    print("="*60)
+    log("")
+    log("="*60)
+    log("Complete!")
+    log("="*60)
 
 
 if __name__ == "__main__":
