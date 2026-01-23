@@ -1,3 +1,5 @@
+#!/bin/bash
+
 USER_ID=${USER_ID:0}
 GROUP_ID=${GROUP_ID:0}
 USERNAME=${USERNAME:root}
