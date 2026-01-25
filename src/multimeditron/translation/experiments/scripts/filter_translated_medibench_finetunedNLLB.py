@@ -325,17 +325,17 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--input",
-        default="src/multimeditron/translation/experiments/results/finetuned_nllb/mediBench_translation/african_translations_subset.json",
+        default="src/multimeditron/translation/experiments/results/finetuned_nllb_consensus/mediBench_translation/african_translations.json",
         help="Input JSON file (large dataset)"
     )
     parser.add_argument(
         "--output",
-        default="src/multimeditron/translation/experiments/results/finetuned_nllb/mediBench_translation/cleaned_high_resource_translation_results_subset.json",
+        default="src/multimeditron/translation/experiments/results/finetuned_nllb_consensus/mediBench_translation/cleaned_high_resource_translation_results_subset.json",
         help="Output JSON file (clean dataset). If not specified, will use input_clean.json"
     )
     parser.add_argument(
         "--stats",
-        default="src/multimeditron/translation/experiments/results/finetuned_nllb/mediBench_translation/cleaned_high_resource_translation_results_stats.json",
+        default="src/multimeditron/translation/experiments/results/finetuned_nllb_consensus/mediBench_translation/cleaned_high_resource_translation_results_stats.json",
         help="Statistics output file. If not specified, will use output_filter_stats.json"
     )
     parser.add_argument(
@@ -346,7 +346,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # --- ✅ ADD THIS PART ---
     if args.quick:
         quick_stats(args.input)
     else:

@@ -90,7 +90,7 @@ Contains medical corpora used for training and evaluation:
     - `xlsum_medical_jsonl/`: Medical news by language
     - `guidelines_consensus/`: Consensus translation evaluation sets
 
-- **`generated_datasets/consensus/`**: Synthetically generated training data
+- **`generated_datasets/consensus/`**: Synthetically generated training data with checkpoints
   - `{lang}_train.jsonl`: Consensus-translated WHO guidelines
   - Each entry contains translations from all 3 models + consensus scores + selected best translation
 

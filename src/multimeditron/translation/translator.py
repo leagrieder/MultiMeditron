@@ -26,7 +26,7 @@ class NLLBTranslator:
     """NLLB-200 translator with fastText language detection."""
     
     def __init__(self, 
-                model_name="src/multimeditron/translation/datasets/training/models/nllb-medical-48langs",  #Fine tuned model - to use the base NLLB-200 3.3B model, add HF path here (nllb-200-3.3B)
+                model_name="src/multimeditron/translation/models/nllb-consensus-finetuned-1epoch",  #Fine tuned model - to use the base NLLB-200 3.3B model, add HF path here (nllb-200-3.3B)
                 lang_detect_model="facebook/fasttext-language-identification"):
         """Initialize NLLB translator with fastText language detection."""
         print(f"[INFO] Loading NLLB model: {model_name}")

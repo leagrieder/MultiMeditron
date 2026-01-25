@@ -1,16 +1,8 @@
 """
-African Languages Translation Experiment - Meditron vs Fine-tuned NLLB
+Fine-tuned NLLB Translation Evaluation for African Languages
 
-Compares two translation approaches for African languages (Amharic, Hausa, Swahili, Yoruba, Zulu):
-1. Meditron's native multilingual translation (direct African → English)
-2. Fine-tuned NLLB translation (trained on consensus translations)
-
-Evaluated using BLEU, chrF, and BERTScore against ground truth English.
-Runs in two passes to avoid GPU OOM: Meditron first, then NLLB.
-
-Default: 1000 samples per language
-
-Output: results/finetuned_nllb_consensus/experiment_meditron_vs_finetuned.json
+Evaluates translation quality from African languages (Amharic, Hausa, Swahili, 
+Yoruba, Zulu) to English using BLEU, chrF, and BERTScore metrics.
 """
 
 import os
@@ -18,48 +10,54 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 import gc
 import sys
-from pathlib import Path
-from datasets import load_dataset
-import torch
-from transformers import AutoTokenizer
-from tqdm import tqdm
 import json
+import argparse
+from pathlib import Path
 from collections import defaultdict, Counter
-import evaluate
+
+import torch
 import fasttext
+import evaluate
+from tqdm import tqdm
+from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
-from multimeditron.model.model import MultiModalModelForCausalLM
-from multimeditron.dataset.preprocessor.modality_preprocessor import ModalityRetriever
-from multimeditron.dataset.registry.fs_registry import FileSystemImageRegistry
-from multimeditron.model.data_loader import DataCollatorForMultimodal
 from multimeditron.translation.translator import NLLBTranslator
+
+LANGUAGE_CONFIG = {
+    'am': ('amh_Ethi', 'Amharic'),
+    'ha': ('hau_Latn', 'Hausa'),
+    'sw': ('swh_Latn', 'Swahili'),
+    'yo': ('yor_Latn', 'Yoruba'),
+    'zu': ('zul_Latn', 'Zulu'),
+}
+
+MAX_CONSECUTIVE_ERRORS = 10
+MIN_SOURCE_LENGTH = 10
+MAX_SOURCE_LENGTH = 400
 
 
 class TranslationEvaluator:
-    """Evaluates and compares translation quality across pipelines."""
     
     def __init__(self):
-        self.results = {
-            'meditron_direct': defaultdict(list),
-            'nllb_finetuned': defaultdict(list)
-        }
-        
+        self.results = defaultdict(list)
         self.detection_stats = {
             'total': 0,
             'correct': 0,
-            'by_language': defaultdict(lambda: {'total': 0, 'correct': 0, 'misdetections': Counter()})
+            'by_language': defaultdict(lambda: {
+                'total': 0, 
+                'correct': 0, 
+                'misdetections': Counter()
+            })
         }
-        
         self.bleu = evaluate.load('bleu')
         self.chrf = evaluate.load('chrf')
-        self.bertscore = evaluate.load("bertscore")
+        self.bertscore = evaluate.load('bertscore')
     
     def track_detection(self, true_lang: str, detected_lang: str):
-        """Track fastText detection against ground truth."""
         self.detection_stats['total'] += 1
         self.detection_stats['by_language'][true_lang]['total'] += 1
         
@@ -69,11 +67,9 @@ class TranslationEvaluator:
         else:
             self.detection_stats['by_language'][true_lang]['misdetections'][detected_lang] += 1
     
-    def add_result(self, pipeline: str, language: str, 
-                   source: str, prediction: str, reference: str,
-                   detected_lang: str = None):
-        """Store translation result."""
-        self.results[pipeline][language].append({
+    def add_result(self, language: str, source: str, prediction: str, 
+                   reference: str, detected_lang: str = None):
+        self.results[language].append({
             'source': source[:100],
             'prediction': prediction,
             'reference': reference,
@@ -81,166 +77,131 @@ class TranslationEvaluator:
         })
     
     def compute_metrics(self):
-        """Compute BLEU, chrF, and BERTScore for all translations."""
         stats = {}
         
-        for pipeline in ['meditron_direct', 'nllb_finetuned']:
-            stats[pipeline] = {}
+        for language, translations in self.results.items():
+            if not translations:
+                continue
             
-            for language, translations in self.results[pipeline].items():
-                if not translations:
-                    continue
-                
-                predictions = [t['prediction'] for t in translations]
-                references = [[t['reference']] for t in translations]
-                
-                bleu_result = self.bleu.compute(predictions=predictions, references=references)
-                chrf_result = self.chrf.compute(predictions=predictions, references=references)
-                bertscore_result = self.bertscore.compute(
-                    predictions=predictions,
-                    references=[t['reference'] for t in translations],
-                    model_type="microsoft/deberta-xlarge-mnli"
-                )
-                
-                stats[pipeline][language] = {
-                    'count': len(translations),
-                    'bleu': bleu_result['bleu'] * 100,
-                    'chrf': chrf_result['score'],
-                    'bertscore_f1': sum(bertscore_result['f1']) / len(bertscore_result['f1']) * 100
-                }
+            predictions = [t['prediction'] for t in translations]
+            references_nested = [[t['reference']] for t in translations]
+            references_flat = [t['reference'] for t in translations]
+            
+            bleu_result = self.bleu.compute(
+                predictions=predictions, 
+                references=references_nested
+            )
+            chrf_result = self.chrf.compute(
+                predictions=predictions, 
+                references=references_nested
+            )
+            bertscore_result = self.bertscore.compute(
+                predictions=predictions,
+                references=references_flat,
+                model_type="microsoft/deberta-xlarge-mnli"
+            )
+            
+            stats[language] = {
+                'count': len(translations),
+                'bleu': bleu_result['bleu'] * 100,
+                'chrf': chrf_result['score'],
+                'bertscore_f1': sum(bertscore_result['f1']) / len(bertscore_result['f1']) * 100
+            }
         
         return stats
     
     def print_summary(self):
-        """Print comparison of Meditron vs Fine-tuned NLLB translation quality."""
         stats = self.compute_metrics()
         
-        print("\n" + "="*70)
-        print("EXPERIMENT: MEDITRON VS FINE-TUNED NLLB CONSENSUS MODEL")
-        print("="*70)
+        print("\n" + "=" * 70)
+        print("FINE-TUNED NLLB TRANSLATION EVALUATION RESULTS")
+        print("=" * 70)
         
+        self._print_detection_stats()
+        self._print_translation_stats(stats)
+        self._print_sample_translations(stats)
+        self._print_final_summary(stats)
+    
+    def _print_detection_stats(self):
         det = self.detection_stats
-        if det['total'] > 0:
-            det_acc = det['correct'] / det['total'] * 100
-            print(f"\n📍 FASTTEXT LANGUAGE DETECTION:")
-            print(f"   Overall Accuracy: {det_acc:.1f}% ({det['correct']}/{det['total']})")
+        if det['total'] == 0:
+            return
+        
+        accuracy = det['correct'] / det['total'] * 100
+        print(f"\nLanguage Detection Accuracy: {accuracy:.1f}% ({det['correct']}/{det['total']})")
+        print("\nPer-Language Breakdown:")
+        
+        for lang, data in sorted(det['by_language'].items(), key=lambda x: -x[1]['total']):
+            lang_acc = data['correct'] / data['total'] * 100 if data['total'] > 0 else 0
+            status = "OK" if lang_acc > 90 else "WARN" if lang_acc > 70 else "FAIL"
+            print(f"  [{status}] {lang}: {lang_acc:>5.1f}% ({data['correct']:3d}/{data['total']:3d})", end='')
             
-            print(f"\n   By Language:")
-            for lang, data in sorted(det['by_language'].items(), key=lambda x: -x[1]['total']):
-                acc = data['correct'] / data['total'] * 100 if data['total'] > 0 else 0
-                symbol = "✅" if acc > 90 else "⚠️" if acc > 70 else "❌"
-                print(f"      {symbol} {lang}: {acc:>5.1f}% ({data['correct']:3d}/{data['total']:3d})", end='')
-                
-                if data['misdetections']:
-                    top = data['misdetections'].most_common(1)[0]
-                    print(f"  → confused with {top[0]} ({top[1]}x)")
-                else:
-                    print()
-        
-        print("\n" + "="*70)
-        print("📊 TRANSLATION QUALITY COMPARISON")
-        print("="*70)
-        print(f"\n{'Language':<12} {'Meditron Direct':<30} {'Fine-tuned NLLB':<30} {'Winner':<10}")
-        print(f"{'':12} {'BLEU':>8} {'chrF':>8} {'BERT-F1':>8}   {'BLEU':>8} {'chrF':>8} {'BERT-F1':>8}")
-        print("-" * 90)
-        
-        all_langs = set()
-        for pipeline_stats in stats.values():
-            all_langs.update(pipeline_stats.keys())
-        
-        winners = {'meditron': 0, 'nllb': 0, 'tie': 0}
-        
-        for lang in sorted(all_langs):
-            med_stats = stats['meditron_direct'].get(lang, {})
-            nllb_stats = stats['nllb_finetuned'].get(lang, {})
-            
-            med_bleu = med_stats.get('bleu', 0)
-            med_chrf = med_stats.get('chrf', 0)
-            nllb_bleu = nllb_stats.get('bleu', 0)
-            nllb_chrf = nllb_stats.get('chrf', 0)
-            med_bert = med_stats.get('bertscore_f1', 0)
-            nllb_bert = nllb_stats.get('bertscore_f1', 0)
-
-            if abs(med_chrf - nllb_chrf) < 2:
-                winner = "➡️  Tie"
-                winners['tie'] += 1
-            elif med_chrf > nllb_chrf:
-                winner = "✅ Meditron"
-                winners['meditron'] += 1
+            if data['misdetections']:
+                top_confusion = data['misdetections'].most_common(1)[0]
+                print(f"  -> confused with {top_confusion[0]} ({top_confusion[1]}x)")
             else:
-                winner = "✅ NLLB"
-                winners['nllb'] += 1
-
-            print(f"{lang:<12} {med_bleu:>7.1f}% {med_chrf:>7.1f} {med_bert:>7.1f}   "
-                f"{nllb_bleu:>7.1f}% {nllb_chrf:>7.1f} {nllb_bert:>7.1f}   {winner}")
+                print()
+    
+    def _print_translation_stats(self, stats):
+        print("\n" + "=" * 70)
+        print("TRANSLATION QUALITY METRICS")
+        print("=" * 70)
+        print(f"\n{'Language':<12} {'BLEU':>10} {'chrF':>10} {'BERT-F1':>10} {'Samples':>10}")
+        print("-" * 55)
         
-        print("\n" + "-" * 70)
+        for lang in sorted(stats.keys()):
+            s = stats[lang]
+            print(f"{lang:<12} {s['bleu']:>9.1f}% {s['chrf']:>9.1f} "
+                  f"{s['bertscore_f1']:>9.1f} {s['count']:>10}")
         
-        med_avg_bleu = sum(s['bleu'] for s in stats['meditron_direct'].values()) / len(stats['meditron_direct']) if stats['meditron_direct'] else 0
-        med_avg_chrf = sum(s['chrf'] for s in stats['meditron_direct'].values()) / len(stats['meditron_direct']) if stats['meditron_direct'] else 0
-        nllb_avg_bleu = sum(s['bleu'] for s in stats['nllb_finetuned'].values()) / len(stats['nllb_finetuned']) if stats['nllb_finetuned'] else 0
-        nllb_avg_chrf = sum(s['chrf'] for s in stats['nllb_finetuned'].values()) / len(stats['nllb_finetuned']) if stats['nllb_finetuned'] else 0        
-        med_avg_bert = sum(s['bertscore_f1'] for s in stats['meditron_direct'].values()) / len(stats['meditron_direct']) if stats['meditron_direct'] else 0
-        nllb_avg_bert = sum(s['bertscore_f1'] for s in stats['nllb_finetuned'].values()) / len(stats['nllb_finetuned']) if stats['nllb_finetuned'] else 0
-
-        print(f"{'AVERAGE':<12} {med_avg_bleu:>7.1f}% {med_avg_chrf:>7.1f} {med_avg_bert:>7.1f}   {nllb_avg_bleu:>7.1f}% {nllb_avg_chrf:>7.1f} {nllb_avg_bert:>7.1f}")
+        print("-" * 55)
         
-        print("\n" + "="*70)
-        print("📝 SAMPLE TRANSLATIONS")
-        print("="*70)
+        if stats:
+            avg_bleu = sum(s['bleu'] for s in stats.values()) / len(stats)
+            avg_chrf = sum(s['chrf'] for s in stats.values()) / len(stats)
+            avg_bert = sum(s['bertscore_f1'] for s in stats.values()) / len(stats)
+            total = sum(s['count'] for s in stats.values())
+            print(f"{'AVERAGE':<12} {avg_bleu:>9.1f}% {avg_chrf:>9.1f} {avg_bert:>9.1f} {total:>10}")
+    
+    def _print_sample_translations(self, stats):
+        print("\n" + "=" * 70)
+        print("SAMPLE TRANSLATIONS")
+        print("=" * 70)
         
-        for lang in sorted(all_langs)[:2]:
-            if lang not in self.results['meditron_direct']:
+        for lang in sorted(stats.keys())[:2]:
+            if lang not in self.results:
                 continue
-                
-            samples = self.results['meditron_direct'][lang][:2]
             
-            for i, sample in enumerate(samples, 1):
+            for i, sample in enumerate(self.results[lang][:2], 1):
                 print(f"\n{lang.upper()} Sample {i}:")
-                print(f"   Source: {sample['source']}...")
-                print(f"   Reference: {sample['reference'][:80]}...")
-                
-                nllb_sample = self.results['nllb_finetuned'][lang][i-1] if i <= len(self.results['nllb_finetuned'][lang]) else None
-                
-                print(f"   Meditron:  {sample['prediction'][:80]}...")
-                if nllb_sample:
-                    print(f"   Fine-tuned NLLB: {nllb_sample['prediction'][:80]}...")
+                print(f"  Source:     {sample['source']}...")
+                print(f"  Reference:  {sample['reference'][:80]}...")
+                print(f"  Predicted:  {sample['prediction'][:80]}...")
+    
+    def _print_final_summary(self, stats):
+        if not stats:
+            return
         
-        print("\n" + "="*70)
-        print("💡 CONCLUSION")
-        print("="*70)
+        avg_bleu = sum(s['bleu'] for s in stats.values()) / len(stats)
+        avg_chrf = sum(s['chrf'] for s in stats.values()) / len(stats)
+        avg_bert = sum(s['bertscore_f1'] for s in stats.values()) / len(stats)
+        total = sum(s['count'] for s in stats.values())
         
-        print(f"\n📊 Translation Winner Count:")
-        print(f"   Meditron Direct (no language hint): {winners['meditron']} languages")
-        print(f"   Fine-tuned NLLB (consensus model):  {winners['nllb']} languages")
-        print(f"   Tie:                                 {winners['tie']} languages")
-        
-        chrf_diff = med_avg_chrf - nllb_avg_chrf
-        
-        print(f"\n📈 Average chrF Score:")
-        print(f"   Meditron:       {med_avg_chrf:.1f}")
-        print(f"   Fine-tuned NLLB: {nllb_avg_chrf:.1f}")
-        print(f"   Difference:      {chrf_diff:+.1f}")
-        
-        if abs(chrf_diff) < 3:
-            print(f"\n➡️  RESULT: Translation quality is COMPARABLE")
-            print(f"   → Both approaches produce similar quality translations")
-        elif chrf_diff > 3:
-            print(f"\n✅ RESULT: Meditron's native multilingual capability is BETTER")
-            print(f"   → Meditron can translate directly without language detection")
-        else:
-            print(f"\n✅ RESULT: Fine-tuned NLLB is BETTER")
-            print(f"   → Fine-tuning on consensus translations improved quality")
-            print(f"   → Use fine-tuned NLLB for African language translation")
-        
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
+        print("SUMMARY")
+        print("=" * 70)
+        print(f"\n  Average BLEU:     {avg_bleu:.1f}%")
+        print(f"  Average chrF:     {avg_chrf:.1f}")
+        print(f"  Average BERT-F1:  {avg_bert:.1f}")
+        print(f"  Total Samples:    {total}")
+        print("\n" + "=" * 70)
     
     def save_results(self, output_path: str):
-        """Save results to JSON."""
+        det = self.detection_stats
         output = {
-            'experiment': 'African Languages: Meditron vs Fine-tuned NLLB Consensus',
+            'experiment': 'African Languages: Fine-tuned NLLB Translation',
             'detection_stats': {
-                'overall_accuracy': self.detection_stats['correct'] / self.detection_stats['total'] * 100 if self.detection_stats['total'] > 0 else 0,
+                'overall_accuracy': det['correct'] / det['total'] * 100 if det['total'] > 0 else 0,
                 'by_language': {
                     k: {
                         'accuracy': v['correct'] / v['total'] * 100 if v['total'] > 0 else 0,
@@ -248,348 +209,284 @@ class TranslationEvaluator:
                         'total': v['total'],
                         'misdetections': dict(v['misdetections'])
                     }
-                    for k, v in self.detection_stats['by_language'].items()
+                    for k, v in det['by_language'].items()
                 }
             },
             'translation_stats': self.compute_metrics(),
-            'detailed_results': {
-                k: dict(v) for k, v in self.results.items()
-            }
+            'detailed_results': dict(self.results)
         }
         
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, indent=2, ensure_ascii=False)
         
-        print(f"\n💾 Results saved to: {output_path}")
+        print(f"\nResults saved to: {output_path}")
+    
+    def to_checkpoint(self):
+        return {
+            'results': dict(self.results),
+            'detection_stats': {
+                'total': self.detection_stats['total'],
+                'correct': self.detection_stats['correct'],
+                'by_language': {
+                    k: {
+                        'total': v['total'],
+                        'correct': v['correct'],
+                        'misdetections': dict(v['misdetections'])
+                    }
+                    for k, v in self.detection_stats['by_language'].items()
+                }
+            }
+        }
+    
+    def load_checkpoint(self, data: dict):
+        self.results = defaultdict(list, data.get('results', {}))
+        
+        det = data.get('detection_stats', {})
+        self.detection_stats['total'] = det.get('total', 0)
+        self.detection_stats['correct'] = det.get('correct', 0)
+        
+        for lang, lang_data in det.get('by_language', {}).items():
+            self.detection_stats['by_language'][lang]['total'] = lang_data.get('total', 0)
+            self.detection_stats['by_language'][lang]['correct'] = lang_data.get('correct', 0)
+            self.detection_stats['by_language'][lang]['misdetections'] = Counter(
+                lang_data.get('misdetections', {})
+            )
 
 
-def save_intermediate_results(results, filename):
-    """Save intermediate results between passes."""
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
-    print(f"   💾 Saved intermediate results to {filename}")
+class CheckpointManager:
+    
+    def __init__(self, output_path: str):
+        output_path = Path(output_path)
+        self.checkpoint_path = output_path.parent / f"{output_path.stem}_checkpoint.json"
+    
+    def save(self, evaluator: TranslationEvaluator, completed_languages: list,
+             current_language: str = None, current_processed: int = 0, 
+             current_dataset_idx: int = 0):
+        checkpoint = {
+            'completed_languages': completed_languages,
+            'current_language': current_language,
+            'current_language_processed': current_processed,
+            'current_dataset_idx': current_dataset_idx,
+            'evaluator_state': evaluator.to_checkpoint()
+        }
+        
+        temp_path = str(self.checkpoint_path) + '.tmp'
+        with open(temp_path, 'w', encoding='utf-8') as f:
+            json.dump(checkpoint, f, indent=2, ensure_ascii=False)
+        
+        os.replace(temp_path, self.checkpoint_path)
+        print(f"  [Checkpoint] {len(completed_languages)} languages complete, "
+              f"{current_processed} samples in current")
+    
+    def load(self) -> dict:
+        if not self.checkpoint_path.exists():
+            return None
+        
+        try:
+            with open(self.checkpoint_path, 'r', encoding='utf-8') as f:
+                checkpoint = json.load(f)
+            print(f"  [Checkpoint] Loaded: {len(checkpoint.get('completed_languages', []))} languages complete")
+            return checkpoint
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"  [Checkpoint] Failed to load: {e}")
+            return None
+    
+    def delete(self):
+        if self.checkpoint_path.exists():
+            os.remove(self.checkpoint_path)
+            print("  [Checkpoint] Removed (experiment complete)")
 
 
-def extract_translation(response: str, original_text: str) -> str:
-    """Extract clean translation from Meditron response, removing LLM commentary."""
-    if original_text in response:
-        response = response.split(original_text)[-1]
-    
-    prefixes_to_remove = [
-        "here is the translation:", "the translation is:", "english translation:",
-        "translation:", "here's the translation:", "the english translation is:",
-        "translated text:", "in english:", "sure, here is the translation:",
-        "certainly! here is the translation:", "okay, here is the translation:",
-        "here you go:", "the text translates to:",
-    ]
-    
-    response_lower = response.lower().strip()
-    
-    for prefix in prefixes_to_remove:
-        if response_lower.startswith(prefix):
-            response = response[len(prefix):].strip()
-            response_lower = response.lower().strip()
-    
-    response = response.replace('**', '').replace('*', '')
-    
-    if (response.startswith('"') and response.endswith('"')) or \
-       (response.startswith("'") and response.endswith("'")):
-        response = response[1:-1].strip()
-    
-    paragraphs = [p.strip() for p in response.split('\n\n') if p.strip()]
-    if len(paragraphs) > 1:
-        first_lower = paragraphs[0].lower()
-        if any(word in first_lower for word in ['here', 'translation', 'english', 'okay', 'sure', 'certainly']):
-            response = '\n\n'.join(paragraphs[1:])
-        else:
-            response = '\n\n'.join(paragraphs)
-    
-    return response.strip()
+def load_fasttext_model():
+    model_path = hf_hub_download(
+        repo_id="facebook/fasttext-language-identification",
+        filename="model.bin"
+    )
+    return fasttext.load_model(model_path)
 
 
-def translate_with_meditron(model, tokenizer, collator, modality_retriever, 
-                           text: str) -> str:
-    """Use Meditron to translate text to English."""
-    if len(text) > 400:
-        text = text[:400]
+def is_valid_sample(sample: dict, lang_code: str) -> bool:
+    source = sample.get(lang_code)
+    reference = sample.get('en')
     
-    prompt = f"""Translate to English:
-
-{text}"""
+    if not source or not reference:
+        return False
+    if len(source.strip()) < MIN_SOURCE_LENGTH:
+        return False
+    if len(source) > MAX_SOURCE_LENGTH:
+        return False
     
-    conversations = [{"role": "user", "content": prompt}]
-    sample = {"conversations": conversations, "modalities": []}
-    sample = modality_retriever.merge_modality_with_sample(sample)
-    batch = collator([sample])
-    
-    torch.cuda.empty_cache()
-    torch.cuda.synchronize()
-    
-    with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
-        outputs = model.generate(
-            batch=batch,
-            temperature=0.1,
-            do_sample=False,
-            max_new_tokens=100,
-            use_cache=True,
-            pad_token_id=tokenizer.pad_token_id,
-            eos_token_id=tokenizer.eos_token_id
-        )
-    
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    response = extract_translation(response, text)
-    
-    del outputs
-    del batch
-    del sample
-    del conversations
-    torch.cuda.empty_cache()
-    torch.cuda.synchronize()
-    gc.collect()
-    
-    return response.strip()
+    return True
 
 
 def run_experiment(args):
-    """Run African languages translation experiment in two passes."""
-    LANG_MAP = {
-        'am': ('amh_Ethi', 'Amharic'),
-        'ha': ('hau_Latn', 'Hausa'),
-        'sw': ('swh_Latn', 'Swahili'),
-        'yo': ('yor_Latn', 'Yoruba'),
-        'zu': ('zul_Latn', 'Zulu'),
-    }
+    print("\n" + "=" * 70)
+    print("FINE-TUNED NLLB TRANSLATION EVALUATION")
+    print("=" * 70)
     
-    print("\n" + "="*70)
-    print("EXPERIMENT: MEDITRON VS FINE-TUNED NLLB CONSENSUS MODEL")
-    print("(TWO-PASS VERSION - Meditron first, then Fine-tuned NLLB)")
-    print("="*70)
+    output_dir = Path(args.output).parent
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    print("\n[1/6] Loading MediTranslation dataset...")
+    checkpoint_mgr = CheckpointManager(args.output)
+    evaluator = TranslationEvaluator()
+    
+    completed_languages = []
+    resume_language = None
+    resume_processed = 0
+    resume_dataset_idx = 0
+    
+    print("\n[1/5] Checking for checkpoint...")
+    checkpoint = checkpoint_mgr.load()
+    if checkpoint:
+        evaluator.load_checkpoint(checkpoint.get('evaluator_state', {}))
+        completed_languages = checkpoint.get('completed_languages', [])
+        resume_language = checkpoint.get('current_language')
+        resume_processed = checkpoint.get('current_language_processed', 0)
+        resume_dataset_idx = checkpoint.get('current_dataset_idx', 0)
+        
+        print(f"  Resuming: {len(completed_languages)} languages done")
+        if resume_language:
+            print(f"  Continuing {resume_language} from sample {resume_processed}")
+    else:
+        print("  No checkpoint found, starting fresh")
+    
+    print("\n[2/5] Loading dataset...")
     dataset = load_dataset(
         "ClosedMeditron/MediTranslation",
         split="train",
         token=os.getenv("HF_LAB_TOKEN")
     )
-    print(f"   ✅ Loaded {len(dataset)} parallel translations")
-
-    max_samples = args.max_samples
-    total_per_lang = max_samples * len(LANG_MAP)
-    print(f"   Using {max_samples} samples per language ({total_per_lang} total)")
+    print(f"  Loaded {len(dataset)} parallel translations")
+    print(f"  Using {args.max_samples} samples per language")
     
-    print("\n[2/6] Loading fastText for language detection...")
-    lid_model_path = hf_hub_download(
-        repo_id="facebook/fasttext-language-identification",
-        filename="model.bin"
-    )
-    fasttext_model = fasttext.load_model(lid_model_path)
-    print("   ✅ FastText loaded")
+    print("\n[3/5] Loading fastText language detector...")
+    fasttext_model = load_fasttext_model()
+    print("  FastText ready")
     
-    evaluator = TranslationEvaluator()
-    meditron_results_file = "meditron_intermediate.json"
+    print("\n[4/5] Loading Fine-tuned NLLB translator...")
+    translator = NLLBTranslator()
+    print("  NLLB ready")
     
-    print("\n" + "="*70)
-    print("[PASS 1/2] MEDITRON DIRECT TRANSLATION")
-    print("="*70)
-    print("\n[3/6] Loading Meditron...")
+    print(f"\n[5/5] Running translations (checkpoint every {args.checkpoint_interval} samples)...")
     
-    default_llm = "meta-llama/Llama-3.1-8B-Instruct"
-    tokenizer = AutoTokenizer.from_pretrained(
-        default_llm,
-        padding_side="left",
-        token=os.getenv("HF_PERSONAL_TOKEN")
-    )
-    tokenizer.pad_token = tokenizer.eos_token
-    ATTACHMENT_TOKEN = "<|reserved_special_token_0|>"
-    tokenizer.add_special_tokens({'additional_special_tokens': [ATTACHMENT_TOKEN]})
-    attachment_token_idx = tokenizer.convert_tokens_to_ids(ATTACHMENT_TOKEN)
-    
-    model = MultiModalModelForCausalLM.from_pretrained(
-        "ClosedMeditron/Mulimeditron-Proj-CLIP-generalist",
-        dtype=torch.bfloat16,
-        use_safetensors=True,
-        token=os.getenv("HF_LAB_TOKEN"),
-        llm_token=os.getenv("HF_PERSONAL_TOKEN"),
-        low_cpu_mem_usage=True,
-    )
-    model.to("cuda")
-    model.eval()
-    
-    if hasattr(model, 'gradient_checkpointing_enable'):
-        try:
-            model.gradient_checkpointing_enable()
-            print("   ✅ Gradient checkpointing enabled")
-        except:
-            pass
-    
-    modality_retriever = ModalityRetriever(
-        registry=FileSystemImageRegistry(base_path=os.getcwd())
-    )
-    collator = DataCollatorForMultimodal(
-        tokenizer=tokenizer,
-        tokenizer_type="llama",
-        modality_processors=model.processors(),
-        attachment_token_idx=attachment_token_idx,
-        add_generation_prompt=True
-    )
-    
-    print("   ✅ Meditron loaded")
-    print(f"   💾 Initial GPU Memory: {torch.cuda.memory_allocated()/1e9:.2f} GB")
-    
-    meditron_results = []
-    
-    print(f"\n[4/6] Running Meditron translations...")
-    for lang_code, (true_nllb_code, lang_name) in LANG_MAP.items():
-        print(f"\n   Processing {lang_name} ({lang_code})...")
+    for lang_code, (nllb_code, lang_name) in LANGUAGE_CONFIG.items():
+        if lang_code in completed_languages:
+            print(f"\n  Skipping {lang_name} - already complete")
+            continue
         
-        processed = 0
+        print(f"\n  Processing {lang_name} ({lang_code})...")
+        
+        if lang_code == resume_language:
+            processed = resume_processed
+            start_idx = resume_dataset_idx
+            print(f"    Resuming from sample {processed}")
+        else:
+            processed = 0
+            start_idx = 0
+        
         consecutive_errors = 0
-        MAX_CONSECUTIVE_ERRORS = 10
+        samples_since_checkpoint = 0
         
-        for idx, sample in enumerate(tqdm(dataset, desc=f"  {lang_name}", total=max_samples)):
-            if processed >= max_samples:
+        progress = tqdm(dataset, desc=f"    {lang_name}", total=args.max_samples, initial=processed)
+        
+        for idx, sample in enumerate(progress):
+            if idx < start_idx:
+                continue
+            
+            if processed >= args.max_samples:
                 break
             
             if consecutive_errors >= MAX_CONSECUTIVE_ERRORS:
-                print(f"\n      ⚠️  Too many consecutive errors, stopping this language")
+                print(f"\n    Too many errors, skipping remaining samples")
                 break
             
-            if idx % 5 == 0 and idx > 0:
+            if idx % 10 == 0 and idx > 0:
                 torch.cuda.empty_cache()
-                torch.cuda.synchronize()
                 gc.collect()
             
-            source_text = sample.get(lang_code)
-            reference_english = sample.get('en')
-            
-            if not source_text or not reference_english or len(source_text.strip()) < 10:
+            if not is_valid_sample(sample, lang_code):
                 continue
             
-            if len(source_text) > 400:
-                continue
+            source_text = sample[lang_code]
+            reference_english = sample['en']
             
             try:
-                pred = fasttext_model.predict(source_text.replace('\n', ' '), k=1)
-                detected_lang = pred[0][0].replace('__label__', '')
-                evaluator.track_detection(true_nllb_code, detected_lang)
+                prediction = fasttext_model.predict(source_text.replace('\n', ' '), k=1)
+                detected_lang = prediction[0][0].replace('__label__', '')
+                evaluator.track_detection(nllb_code, detected_lang)
                 
-                meditron_translation = translate_with_meditron(
-                    model, tokenizer, collator, modality_retriever,
-                    source_text
+                translation = translator.translate(
+                    source_text,
+                    src_lang=nllb_code,
+                    tgt_lang='eng_Latn'
                 )
                 
-                meditron_results.append({
-                    'lang_code': lang_code,
-                    'source': source_text,
-                    'prediction': meditron_translation,
-                    'reference': reference_english,
-                    'detected_lang': detected_lang,
-                    'true_lang': true_nllb_code
-                })
-                
                 evaluator.add_result(
-                    pipeline='meditron_direct',
                     language=lang_code,
                     source=source_text,
-                    prediction=meditron_translation,
-                    reference=reference_english
+                    prediction=translation,
+                    reference=reference_english,
+                    detected_lang=detected_lang
                 )
                 
                 processed += 1
                 consecutive_errors = 0
+                samples_since_checkpoint += 1
                 
-                if processed % 10 == 0:
-                    mem_gb = torch.cuda.memory_allocated() / 1e9
-                    print(f"\n      💾 After {processed} samples: {mem_gb:.2f} GB")
+                if samples_since_checkpoint >= args.checkpoint_interval:
+                    checkpoint_mgr.save(
+                        evaluator, completed_languages,
+                        current_language=lang_code,
+                        current_processed=processed,
+                        current_dataset_idx=idx + 1
+                    )
+                    samples_since_checkpoint = 0
                 
             except Exception as e:
                 consecutive_errors += 1
-                print(f"\n      [ERROR] Sample {idx} failed: {str(e)[:100]}")
+                print(f"\n    Error at sample {idx}: {str(e)[:80]}")
                 torch.cuda.empty_cache()
-                torch.cuda.synchronize()
                 gc.collect()
-                continue
         
-        print(f"   ✅ Completed {lang_name}: {processed} samples")
-        print(f"   💾 GPU Memory: {torch.cuda.memory_allocated()/1e9:.2f} GB")
+        completed_languages.append(lang_code)
+        checkpoint_mgr.save(evaluator, completed_languages)
+        print(f"  Completed {lang_name}: {processed} samples")
     
-    save_intermediate_results(meditron_results, meditron_results_file)
+    print("\n" + "=" * 70)
+    print("Computing final results...")
     
-    print("\n   🗑️  Unloading Meditron to free GPU memory...")
-    del model
-    del tokenizer
-    del collator
-    del modality_retriever
-    torch.cuda.empty_cache()
-    torch.cuda.synchronize()
-    gc.collect()
-    print("   ✅ GPU memory cleared")
-    
-    print("\n" + "="*70)
-    print("[PASS 2/2] FINE-TUNED NLLB TRANSLATION")
-    print("="*70)
-    print("\n[5/6] Loading Fine-tuned NLLB (consensus model)...")
-    
-    # ✅ Use fine-tuned consensus model
-    translator = NLLBTranslator(
-        model_name="src/multimeditron/translation/models/nllb-test-1k-samples"
-    )
-    print("   ✅ Fine-tuned NLLB loaded")
-    
-    print(f"\n   Running Fine-tuned NLLB translations on {len(meditron_results)} samples...")
-    
-    for idx, result in enumerate(tqdm(meditron_results, desc="  Translating")):
-        try:
-            nllb_translation = translator.translate(
-                result['source'],
-                src_lang=result['true_lang'],
-                tgt_lang='eng_Latn'
-            )
-            
-            evaluator.add_result(
-                pipeline='nllb_finetuned',
-                language=result['lang_code'],
-                source=result['source'],
-                prediction=nllb_translation,
-                reference=result['reference'],
-                detected_lang=result['detected_lang']
-            )
-            
-            if (idx + 1) % 10 == 0:
-                torch.cuda.empty_cache()
-                
-        except Exception as e:
-            print(f"\n      [ERROR] Sample {idx} failed: {e}")
-            torch.cuda.empty_cache()
-            continue
-    
-    print("\n[6/6] Computing results...")
     evaluator.print_summary()
     evaluator.save_results(args.output)
+    checkpoint_mgr.delete()
     
-    if os.path.exists(meditron_results_file):
-        os.remove(meditron_results_file)
-    
-    print("\n✅ Experiment complete!\n")
+    print("\nExperiment complete.\n")
 
 
-if __name__ == "__main__":
-    import argparse
-    
+def main():
     parser = argparse.ArgumentParser(
-        description="African languages translation experiment: Meditron vs Fine-tuned NLLB"
+        description="Evaluate fine-tuned NLLB translation for African languages"
     )
     parser.add_argument(
         "--max_samples",
         type=int,
         default=1000,
-        help="Samples per language (default: 1000)"
+        help="Number of samples per language (default: 1000)"
     )
     parser.add_argument(
         "--output",
-        default="src/multimeditron/translation/experiments/results/finetuned_nllb_consensus/experiment_0_1k_samples.json",
+        default="src/multimeditron/translation/experiments/results/finetuned_nllb_consensus/experiment_1.json",
         help="Output JSON file path"
+    )
+    parser.add_argument(
+        "--checkpoint_interval",
+        type=int,
+        default=50,
+        help="Save checkpoint every N samples (default: 50)"
     )
     
     args = parser.parse_args()
     run_experiment(args)
+
+
+if __name__ == "__main__":
+    main()
