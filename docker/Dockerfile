@@ -1,5 +1,4 @@
 ARG NGC_VERSION="25.05-py3"
-ARG ARCH="x86_64"
 
 FROM nvcr.io/nvidia/pytorch:$NGC_VERSION
 
@@ -11,13 +10,12 @@ RUN apt-get update && \
         tmux \
         sudo \
         git \
-        gosu \
+        gosu
 
 COPY . /workspace/MultiMeditron
 WORKDIR /workspace/MultiMeditron
 RUN pip install -e ".[flash-attn]"
 RUN pip install git+https://github.com/EPFLiGHT/lmms-eval.git 
-
 
 COPY docker/entrypoint.sh /workspace/entrypoint.sh
 RUN chmod +x /workspace/entrypoint.sh
