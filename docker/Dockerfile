@@ -22,9 +22,9 @@ RUN chmod +x /workspace/entrypoint.sh
 
 RUN ARCH="$(uname -m)" && \
     if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-        curl -L https://github.com/a8m/envsubst/releases/download/v1.4.3/envsubst-Linux-arm64 -o envsubst \
+        curl -L https://github.com/a8m/envsubst/releases/download/v1.4.3/envsubst-Linux-arm64 -o envsubst; \
     else \
-        curl -L https://github.com/a8m/envsubst/releases/download/v1.4.3/envsubst-Linux-x86_64 -o envsubst \
+        curl -L https://github.com/a8m/envsubst/releases/download/v1.4.3/envsubst-Linux-x86_64 -o envsubst; \
     fi && \
     chmod +x envsubst && \
     sudo mv envsubst /usr/local/bin
