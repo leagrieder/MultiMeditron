@@ -10,7 +10,8 @@ RUN apt-get update && \
         tmux \
         sudo \
         git \
-        gosu 
+        gosu \
+	gettext
 
 COPY . /workspace/MultiMeditron
 WORKDIR /workspace/MultiMeditron
