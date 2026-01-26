@@ -185,9 +185,10 @@ Each configuration file can be used to train the corresponding model. The traini
 Example usage (single node):
 
 ```bash
-# Train single CLIP model
-torchrun --nproc-per-node $GPUS_PER_NODE -m multimeditron train --config config/config_alignment.yaml
-torchrun --nproc-per-node $GPUS_PER_NODE -m multimeditron train --config config/config_end2end.yaml
+# Train single CLIP model. We set number of processes to 4 because there is 4 GPUs per node on the clariden cluster, modify as needed.
+export NUM_PROCS=4
+torchrun --nproc-per-node $NUM_PROCS -m multimeditron train --config config/config_alignment.yaml
+torchrun --nproc-per-node $NUM_PROCS -m multimeditron train --config config/config_end2end.yaml
 ```
 
 #### Multi-node training (CSCS)
@@ -241,7 +242,7 @@ python3 -m accelerate.commands.launch \
     --model multimeditron \
     --model_args pretrained="$CHECKPOINT",tokenizer_type="$TOKENIZER_TYPE",device_map="auto" \
     --tasks gmai,slake,path_vqa \
-    --batch_size 1 \
+    --batch_size 1
 ```
 
 Replace the `$NUM_PROC` by the the number of GPUs on your node, the `$CHECKPOINT` variable by your model checkpoint path, and the `$TOKENIZER_TYPE` by the tokenizer you used for training the multimodal model.
