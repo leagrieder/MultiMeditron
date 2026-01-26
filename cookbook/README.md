@@ -119,8 +119,8 @@ export MODEL_ROOT=$SCRATCH/multimeditron/checkpoints
 export HF_TOKEN="<hf_token>"
 export HF_HOME=$SCRATCH/hf
 
-# Number of dataset processes for the huggingface library
-export NUM_PROC=64
+# Number of processes to use for dataset preprocessing
+export DS_NUM_PROC=64
 
 # WandB
 export WANDB_API_KEY="<wandb_token>" # Optional if you don't want to log to WandB
@@ -149,11 +149,11 @@ from datasets import load_dataset
 import os
 
 STORAGE_ROOT = os.environ["STORAGE_ROOT"]
-NUM_PROC = os.environ["NUM_PROC"]
+DS_NUM_PROC = os.environ["DS_NUM_PROC"]
 
 dataset_name = "OpenMeditron/MultiMediset"
 
-ds_dict = load_dataset(dataset_name, num_proc=NUM_PROC)
+ds_dict = load_dataset(dataset_name, num_proc=DS_NUM_PROC)
 
 for split_name, split_dataset in ds_dict.items():
     split_dir = os.path.join(STORAGE_ROOT, split_name)
@@ -186,9 +186,8 @@ Example usage (single node):
 
 ```bash
 # Train single CLIP model. We set number of processes to 4 because there is 4 GPUs per node on the clariden cluster, modify as needed.
-export NUM_PROCS=4
-torchrun --nproc-per-node $NUM_PROCS -m multimeditron train --config config/config_alignment.yaml
-torchrun --nproc-per-node $NUM_PROCS -m multimeditron train --config config/config_end2end.yaml
+torchrun --nproc-per-node ${NUM_PROC:-4} -m multimeditron train --config config/config_alignment.yaml
+torchrun --nproc-per-node ${NUM_PROC:-4} -m multimeditron train --config config/config_end2end.yaml
 ```
 
 #### Multi-node training (CSCS)
@@ -237,7 +236,7 @@ To evaluate a trained model, run:
 
 ```bash
 python3 -m accelerate.commands.launch \
-    --num_processes $NUM_PROC \
+    --num_processes ${NUM_PROC:-4} \
     -m lmms_eval \
     --model multimeditron \
     --model_args pretrained="$CHECKPOINT",tokenizer_type="$TOKENIZER_TYPE",device_map="auto" \
@@ -245,7 +244,7 @@ python3 -m accelerate.commands.launch \
     --batch_size 1
 ```
 
-Replace the `$NUM_PROC` by the the number of GPUs on your node, the `$CHECKPOINT` variable by your model checkpoint path, and the `$TOKENIZER_TYPE` by the tokenizer you used for training the multimodal model.
+Replace the `$NUM_PROC` by the the number of GPUs on your node (can check it via `nvidia-smi`), the `$CHECKPOINT` variable by your model checkpoint path, and the `$TOKENIZER_TYPE` by the tokenizer you used for training the multimodal model.
 
 You can get the `$TOKENIZER_TYPE` by looking at the configuration file:
 
@@ -259,8 +258,5 @@ And check the line
 tokenizer_type: qwen3  # (or apertus, llama depending on your setup)
 ```
 
-The available tokenizer types are:
+The available tokenizer types are: `qwen3`, `apertus`, and `llama`.
 
-- `qwen3`
-- `apertus`
-- `llama`
