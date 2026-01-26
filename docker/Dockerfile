@@ -21,5 +21,10 @@ RUN pip install git+https://github.com/EPFLiGHT/lmms-eval.git
 COPY docker/entrypoint.sh /workspace/entrypoint.sh
 RUN chmod +x /workspace/entrypoint.sh
 
+# A small python script that rebuild the envsubst utility to work with {{VAR}} syntax
+COPY docker/envsubst.py /bin/envsubst
+RUN chmod +x /bin/envsubst
+
+
 ENTRYPOINT ["/bin/bash", "/workspace/entrypoint.sh"]
 CMD ["/bin/bash"]
