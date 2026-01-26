@@ -31,7 +31,6 @@ class MultimodalTrainer(Trainer):
         data_collator=None,
         train_dataset=None,
         eval_dataset=None,
-        tokenizer=None,
         model_init=None,
         compute_metrics=None,
         # on_the_fly_embedding: bool = True,
@@ -50,7 +49,6 @@ class MultimodalTrainer(Trainer):
             data_collator: The function to use to form a batch from a list of elements of `train_dataset` or `eval_dataset`.
             train_dataset: The dataset to use for training.
             eval_dataset: The dataset to use for evaluation.
-            tokenizer: The tokenizer used to preprocess the data.
             model_init: A function that instantiates the model to be used.
             compute_metrics: A function that will be called at the end of each evaluation phase.
             callbacks: A list of callbacks to customize the training loop.
@@ -65,7 +63,6 @@ class MultimodalTrainer(Trainer):
             data_collator=data_collator,
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            tokenizer=tokenizer,
             model_init=model_init,
             compute_metrics=compute_metrics,
             callbacks=callbacks,
