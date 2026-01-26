@@ -130,6 +130,8 @@ export WANDB_DIR=$SCRATCH/multimeditron/wandb
 # Multi node training configuration
 export NNODES=4
 export NUM_PROC=4 # 4 GPUs per node (adapt if needed accordingly)
+
+export ACCOUNT=a127
 ```
 
 Make sure to replace the `$HF_TOKEN` and `$WANDB_API_KEY` by your actual tokens.
@@ -198,6 +200,8 @@ torchrun --nproc-per-node ${NUM_PROC:-4} -m multimeditron train --config config/
 ssh clariden
 ```
 
+If necessary create and to the `source .env` again.
+
 2. Download the sbatch script
 
 ```bash
@@ -219,6 +223,17 @@ sbatch training.sh config/config_alignment.yaml
 # For end2end
 sbatch training.sh config/config_end2end.yaml
 ```
+
+
+5. To check the logs of the run:
+
+```bash
+cd ~reports/multimeditron/
+tail -f R-xxxxx.err
+```
+
+Replace the `xxxxx` by the job ID and the name of the run (you can do a `ls` to see the name of the report)
+
 
 ### Evaluation
 
