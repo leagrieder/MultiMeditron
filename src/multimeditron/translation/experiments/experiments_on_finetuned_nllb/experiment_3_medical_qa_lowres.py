@@ -2,7 +2,7 @@
 African Languages Evaluation: Translation Pipeline vs Native Multilingual
 
 Compares two approaches for medical QA in African languages:
-1. Translation pipeline: Translate to English → Meditron → (implicit English response)
+1. Translation pipeline using finetuned NLLB: Translate to English → Meditron → (implicit English response)
 2. Native multilingual: Direct Meditron on African language input
 
 Uses pre-translated MediBench dataset in African languages.

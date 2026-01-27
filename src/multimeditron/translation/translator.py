@@ -1,7 +1,7 @@
 """
 NLLB-200 Translator with Language Detection
 
-This module provides a translation interface using the NLLB-200 multilingual model
+This module provides a translation interface using the NLLB-200 finetuned multilingual model
 combined with fastText language detection.
 
 Translation Strategy:
