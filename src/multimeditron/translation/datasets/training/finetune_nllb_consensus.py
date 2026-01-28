@@ -68,8 +68,8 @@ log(f"\n🖥️  Detected {num_gpus} GPU(s)")
 BATCH_SIZE = 4  # per GPU
 GRADIENT_ACCUMULATION = 4  # Reduced since we have 4 GPUs
 
-NUM_EPOCHS = 5
-LEARNING_RATE = 5e-6
+NUM_EPOCHS = 1
+LEARNING_RATE = 1e-6
 WARMUP_RATIO = 0.1
 WEIGHT_DECAY = 0.01
 MAX_LENGTH = 256
